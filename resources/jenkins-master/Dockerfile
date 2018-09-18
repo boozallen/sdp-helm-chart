@@ -25,9 +25,9 @@ COPY resources/scripts/configure.groovy /var/jenkins_home/init.groovy.d/configur
 RUN chmod 777 /var/jenkins_home/init.groovy.d/*
 
 # insert job dsl scripts
-RUN mkdir -p /var/jenkins_home/init.jobdsl.d
-COPY resources/jobs/* /var/jenkins_home/init.jobdsl.d/
-RUN chmod 777 /var/jenkins_home/init.jobdsl.d/*
+# RUN mkdir -p /var/jenkins_home/init.jobdsl.d
+# COPY resources/jobs/* /var/jenkins_home/init.jobdsl.d/
+# RUN chmod 777 /var/jenkins_home/init.jobdsl.d/*
 
 # insert SDP entrypiont
 COPY resources/scripts/sdp_entrypoint.groovy /usr/share/jenkins/ref/sdp_entrypoint.groovy
