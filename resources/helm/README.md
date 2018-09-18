@@ -1,3 +1,8 @@
+<!---
+Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+This software package is licensed under the Booz Allen Public License. The license can be found here: http://boozallen.github.io/licenses/bapl
+--->
+
 # Deploying Helm For Multitenancy on OpenShift
 
 ## Overview
@@ -7,13 +12,13 @@ The steps below will assume we're creating an instance of tiller for an org call
 
 ## Steps
 1. Create the tiller namespace
-~~~ 
+~~~
 oc new-project tiller
 ~~~
 
 2. Create a service account for tiller to use
 ~~~
-oc create serviceaccount tiller 
+oc create serviceaccount tiller
 ~~~
 
 3. Deploy tiller to the namespace using the serviceaccount

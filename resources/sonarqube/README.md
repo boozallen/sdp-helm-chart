@@ -1,4 +1,8 @@
-# pecos-sonarqube
+<!---
+Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+This software package is licensed under the Booz Allen Public License. The license can be found here: http://boozallen.github.io/licenses/bapl
+--->
+# Sonarqube
 This repository builds a fully configured image of Sonarqube.
 
 ### Installing
@@ -22,30 +26,30 @@ This repository builds a fully configured image of Sonarqube.
      1. Put that API token in the Jenkins credentials store, specifically the one named `sonarqube`
      1. Also put that API token at "Manage Jenkins > Configure System > SonarQube servers > Server authentication token"
  1. WebHook
-     1. Create a webhook named `Jenkins` with the value `http://jenkins.apps.nonprod.pecoscms.net/sonarqube-webhook/`
+     1. Create a webhook named `Jenkins` that points to the SDP Jenkins Server
  i Note that that url is just the jenkins route plus "/sonarqube-webhook/"
- 
+
  ### Components
  Each piece of the repo and how it should be used
- 
+
  ##### Jenkinsfile
  Interpreted by jenkins in order to build the image and push to the docker repository
- 
+
  ##### Dockerfile
  Base image plus Sonar and plugins download
- 
+
  ##### docker-entrypoint.sh
  Installs/moves the plugins, and then starts Sonarqube Server. This needed to be at runtime due to PV configuration in the base image. Once we update the base image, this can probably be moved to the Dockerfile.
- 
+
  ##### sonarqube.yaml
  Sets up an instance of this Sonarqube, along with a basic postgres instance
- 
+
  What it does:
   * Creates Sonar and postgres pods, services, and route
 
  ##### job.yaml
  Creates a job to finish setting up sonarqube
- 
+
  What it does:
   * Adds a config file for the Jenkins Sonarqube plugin
   * Creates a user token in Sonarqube
