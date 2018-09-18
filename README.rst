@@ -179,7 +179,7 @@ Example Configuration
 
   global:
     persistentStorage: true
-    domain: apps.oscp.microcaas.net
+    domain: apps.ocp.mydomain.com
 
   jenkins:
     masterDockerContextDir: resources/jenkins-master
@@ -191,16 +191,16 @@ Example Configuration
     - name: terrana-steven
       displayName: Steven Terrana
       credentialID: github
-      apiUrl: "https://github.boozallencsn.com/api/v3"
+      apiUrl: "https://api.github.com"
     - name: Red-Hat-Summit
       displayName: Red Hat Summit
       credentialID: github
-      apiUrl: "https://github.boozallencsn.com/api/v3"
+      apiUrl: "https://api.github.com"
 
     # Pipeline Configuration Repository
     pipelineLibraries:
     - name: red-hat-summit
-      githubApiUrl: "https://github.boozallencsn.com/api/v3"
+      githubApiUrl: "https://api.github.com"
       githubCredentialID: github
       org: Red-Hat-Summit
       repo: pipeline-configuration
