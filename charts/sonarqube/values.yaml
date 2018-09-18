@@ -1,0 +1,21 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+global:
+  openshift: true
+  persistentStorage: true
+  domain: apps.ocp.example.com
+  sourceRepositoryUrl: "https://github.com/boozallen/sdp-helm-chart"
+  sourceSecret: github
+
+#domain: null
+subdomain: sonarqube
+dockerContextDir: resources/sonarqube
+#sourceRepositoryUrl: null
+#imageTag: null # defaults to .Chart.version
+resources:
+    limits:
+      cpu: "1500m"
+      memory: "5000Mi"
+    requests:
+      cpu: "1500m"
+      memory: "5000Mi"

@@ -2,19 +2,19 @@
 # This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
 
 global:
-  domain: apps.ocp.myuscis-tech-challenge # Set this to the domain of your Openshift routes (or K8's services)
+  domain: apps.ocp.example.com # Set this to the domain of your Openshift routes (or K8's services)
   # Configure any other global variables (e.g. openshift, persistentStorage) below
 
 # something
 jenkins:
   githubOrganizations: # Replace the example below with the GitHub Organizations the pipeline should serve
-  - name: Red-Hat-Summit
-    displayName: "Red Hat Summit"
+  - name: MyProject
+    displayName: "My Project"
     credentialID: github
-    apiUrl: "https://github.boozallencsn.com/api/v3"
+    apiUrl: "https://api.github.com"
   pipelineLibraries: # Replace the example below with the pipeline config libraries you want to make available
   - name: red-hat-summit
-    githubApiUrl: "https://github.boozallencsn.com/api/v3"
+    githubApiUrl: "https://api.github.com"
     githubCredentialID: github
     org: Red-Hat-Summit
     repo: pipeline-configuration

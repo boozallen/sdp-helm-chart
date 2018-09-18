@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+#This software package is licensed under the Booz Allen Public License. The license can be found here: http://boozallen.github.io/licenses/bapl
+
 # Constants
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

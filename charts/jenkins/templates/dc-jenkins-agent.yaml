@@ -116,7 +116,7 @@ spec:
           privileged: true
         env:
         - name: DOCKER_DAEMON_ARGS
-          value: {{ .Values.dockerDaemonArgs | default "--insecure-registry dtr.microcaas.net --insecure-registry docker-registry.default.svc:5000" }}
+          value: {{ .Values.dockerDaemonArgs | default "--insecure-registry docker-registry.default.svc:5000" }}
         - name: JENKINS_URL
           value: "http://jenkins-master:8080/"
         - name: JENKINS_TUNNEL
