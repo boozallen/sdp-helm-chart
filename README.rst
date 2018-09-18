@@ -30,7 +30,7 @@ Configure the chart by customizing the ``values.yaml`` file.
 
   jenkins:
     domain:                  String       A domain managed by your router; overwrites the global value
-    subdomain:               String       The prefix for your Jenkins URL (i.e. subdomain.my-domain.com)
+    subdomain:               String       The prefix for your Jenkins URL (i.e. subdomain.example.com)
     masterDockerContextDir:  String       The directory containing your Jenkins-master source code
     agentDockerContextDir:   String       The directory containing your Jenkins-agent source code
     numAgents:               (Pos.) Int   The number of Jenkins-agents to create
@@ -48,7 +48,7 @@ Configure the chart by customizing the ``values.yaml`` file.
   sonarqube:
     enabled:                 Boolean   Set to true if installing Sonarqube as part of the SDP installation
     domain:                  String    A domain managed by your router; overwrites the global value
-    subdomain:               String    The prefix for your Sonarqube URL (i.e. subdomain.my-domain.com)
+    subdomain:               String    The prefix for your Sonarqube URL (i.e. subdomain.example.com)
     dockerContextDir:        String    The directory containing your Sonarqube source code
     sourceRepositoryUrl:     String    A github repository containing Sonarqube image source code; overwrites the global value
     imageTag:                String    What to tag the Sonarqube images (master/agent) you create as part of the install
@@ -179,7 +179,7 @@ Example Configuration
 
   global:
     persistentStorage: true
-    domain: apps.ocp.mydomain.com
+    domain: apps.ocp.example.com
 
   jenkins:
     masterDockerContextDir: resources/jenkins-master

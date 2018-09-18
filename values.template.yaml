@@ -2,7 +2,7 @@
 # This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
 
 global:
-  domain: apps.ocp.my-domain.net # Set this to the domain of your Openshift routes (or K8's services)
+  domain: apps.ocp.example.com # Set this to the domain of your Openshift routes (or K8's services)
   # Configure any other global variables (e.g. openshift, persistentStorage) below
 
 # something
