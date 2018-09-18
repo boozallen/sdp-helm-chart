@@ -7,13 +7,13 @@ apiVersion: build.openshift.io/v1
 metadata:
   name: selenium-chrome
   namespace: {{ .Release.Namespace }}
-  labels: 
+  labels:
     app: selenium
 spec:
   source:
     type: Git
     git:
-      ref: {{ .Values.sourceRepositoryBranch | default "feature/selenium-grid" }}
+      ref: {{ .Values.sourceRepositoryBranch | default "master" }}
       {{- if .Values.sourceRepositoryUrl }}
       uri: {{ .Values.sourceRepositoryUrl }}
       {{- else }}

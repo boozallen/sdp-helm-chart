@@ -32,11 +32,6 @@ RUN chmod 777 /var/jenkins_home/init.jobdsl.d/*
 # insert SDP entrypiont
 COPY resources/scripts/sdp_entrypoint.groovy /usr/share/jenkins/ref/sdp_entrypoint.groovy
 
-# copy Booz Allen certs for CSN GitHub
-COPY resources/certs/BAH_SSL_Self_Signed.cer /usr/local/share/ca-certificates/BAH_SSL_Self_Signed.crt
-COPY resources/certs/github.boozallencsn.com-combined.crt /usr/local/share/ca-certificates/github.boozallencsn.com-combined.crt
-RUN update-ca-certificates
-
 # copy in custom common-workflow plugin
 COPY resources/plugins/common-workflow.hpi /usr/share/jenkins/ref
 

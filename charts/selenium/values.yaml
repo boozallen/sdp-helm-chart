@@ -1,0 +1,11 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+global:
+  openshift: true
+  domain: apps.ocp.example.com
+  sourceRepositoryUrl: "https://github.com/boozallen/sdp-helm-chart"
+  sourceSecret: github
+
+chromeDockerContextDir: resources/selenium_grid/chrome
+imageTag: 3.12.0
+subdomain: selenium-grid

@@ -61,11 +61,11 @@ if (on_openshift){
 }
 
 sdp_github = [
-  api_url: "https://github.boozallencsn.com/api/v3",
-  org: "solutions-delivery-platform",
-  repo: "pipeline-framework",
+  api_url: "https://api.github.com",
+  org: "boozallen",
+  repo: "sdp-pipeline-framework",
   credential_id: "github",
-  enterprise: true
+  //enterprise: true
 ]
 
 ////////////////
