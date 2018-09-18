@@ -1,0 +1,48 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  labels:
+    app: selenium
+    node: chrome
+  name: selenium-chrome
+  namespace:  {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    app: selenium
+    deploymentconfig: selenium-chrome
+    node: chrome
+  template:
+    metadata:
+      labels:
+        app: selenium
+        deploymentconfig: selenium-chrome
+        node: chrome
+    spec:
+      containers:
+        - image: docker-registry.default.svc:5000/{{ .Release.Namespace }}/selenium-chrome:{{.Values.imageTag | default .Chart.AppVersion}}
+          env:
+          - name: HOME
+            value: /home/seluser
+          - name: USER_NAME
+            value: seluser
+          - name: HUB_PORT_PARAM
+            value: '4444'
+          - name: HUB_HOST
+            value: selenium-hub.{{ .Release.Namespace }}.svc
+          imagePullPolicy: Always
+          name: selenium-chrome
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - selenium-chrome
+        from:
+          kind: ImageStreamTag
+          name: 'selenium-chrome:{{.Values.imageTag | default .Chart.AppVersion}}'
+      type: ImageChange
+

@@ -1,0 +1,69 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+kind: DeploymentConfig
+apiVersion: "apps.openshift.io/v1"
+metadata:
+  name: sonarqube
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: sonarqube
+    deploymentconfig: sonarqube
+spec:
+  strategy:
+    rollingParams:
+      post:
+        execNewPod:
+          env:
+          - name: JENKINS_USER
+            valueFrom:
+              secretKeyRef:
+                name: jenkins-access
+                key: jenkins-user
+          - name: JENKINS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: jenkins-access
+                key: jenkins-password
+          command:
+          - /bin/sh
+          - /opt/sonarqube/post-install-on-sonarqube.sh
+          containerName: sonarqube-bootstrap
+        failurePolicy: ignore
+    type: Recreate
+  triggers:
+  - type: ConfigChange
+  - type: ImageChange
+    imageChangeParams:
+      automatic: true
+      containerNames:
+      - sonarqube
+      from:
+        kind: ImageStreamTag
+        name: sonarqube:{{ .Values.imageTag | default .Chart.Version }}
+  replicas: 1
+  selector:
+    name: sonarqube
+  template:
+    metadata:
+      labels:
+        name: sonarqube
+        app: sonarqube
+        deploymentconfig: sonarqube
+    spec:
+      containers:
+      - name: sonarqube
+        image: "docker-registry.default.svc:5000/{{.Release.Namespace}}/sonarqube:{{ .Values.imageTag | default .Chart.Version }}"
+        resources:
+          limits:
+            cpu: {{ .Values.resources.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.memory | quote }}
+          requests:
+            cpu: {{ .Values.resources.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.memory | quote }}
+        volumeMounts:
+        - mountPath: /opt/sonarqube/data
+          name: sonarqube-data
+      volumes:
+      - emptyDir: {}
+        name: sonarqube-data

@@ -1,0 +1,41 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: selenium
+  name: selenium-firefox
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    app: selenium
+    deploymentconfig: selenium-firefox
+  template:
+    metadata:
+      labels:
+        app: selenium
+        deploymentconfig: selenium-firefox
+    spec:
+      containers:
+        - env:
+            - name: HUB_HOST
+              value: selenium-hub.{{ .Release.Namespace }}.svc
+            - name: HUB_PORT_PARAM
+              value: '4444'
+          image: >-
+            selenium/node-firefox:{{ .Values.imageTag | default .Chart.AppVersion }}
+          imagePullPolicy: IfNotPresent
+          name: selenium-firefox
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - selenium-firefox
+        from:
+          kind: ImageStreamTag
+          name: 'selenium-firefox:{{ .Values.imageTag | default .Chart.AppVersion }}'
+      type: ImageChange

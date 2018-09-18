@@ -1,0 +1,8 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+apiVersion: v1
+appVersion: "1.0"
+description: A Helm chart for SDP Jenkins
+name: jenkins
+version: 0.1.0

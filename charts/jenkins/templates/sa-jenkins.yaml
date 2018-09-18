@@ -1,0 +1,10 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: jenkins
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    serviceaccounts.openshift.io/oauth-redirectreference.jenkins: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"jenkins"}}'

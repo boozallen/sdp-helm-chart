@@ -1,0 +1,20 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: sonarqube
+  name: sonarqube
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+    - name: 9000-tcp
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    deploymentconfig: sonarqube
+  sessionAffinity: None
+  type: ClusterIP

@@ -1,0 +1,18 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    app: selenium
+  name: selenium-firefox
+  namespace: {{ .Release.Namespace }}
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - from:
+        kind: DockerImage
+        name: 'selenium/node-firefox:{{ .Values.imageTag | default .Chart.AppVersion }}'
+      name: {{ .Values.imageTag | default .Chart.AppVersion }}

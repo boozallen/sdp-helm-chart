@@ -1,0 +1,46 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+apiVersion: v1
+kind: Template
+metadata:
+  name: tiller-project-role
+  annotations:
+    description: "RBAC required for helm to deploy to a project"
+objects:
+
+# lets tiller deploy resources to $PROJECT
+- kind: Role
+  apiVersion: v1
+  metadata:
+    name: tiller-manager
+    namespace: ${PROJECT}
+  rules:
+  - apiGroups:
+    - '*'
+    resources:
+    - '*'
+    verbs:
+    - '*'
+
+- kind: RoleBinding
+  apiVersion: v1
+  metadata:
+    name: tiller-manager
+    namespace: ${PROJECT}
+  roleRef:
+    name: tiller-manager
+    namespace: ${PROJECT}
+  subjects:
+  - kind: ServiceAccount
+    name: tiller
+    namespace: ${TILLER_NAMESPACE}
+  userNames:
+  - system:serviceaccount:${TILLER_NAMESPACE}:tiller
+
+parameters:
+- name: TILLER_NAMESPACE
+  description: "the tiller namespace"
+- name: PROJECT
+  description: "the project tiller should be able to deploy to"
+  

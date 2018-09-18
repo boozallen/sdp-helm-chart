@@ -1,0 +1,83 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: jenkins-master
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: jenkins
+    name: jenkins-master
+spec:
+  replicas: 1
+  selector:
+    app: jenkins
+    deploymentconfig: jenkins-master
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - jenkins-master
+        from:
+          kind: ImageStreamTag
+          name: "jenkins-master:{{ .Values.imageTag | default .Chart.Version }}"
+  template:
+    metadata:
+      labels:
+        app: jenkins
+        deploymentconfig: jenkins-master
+    spec:
+      serviceAccountName: jenkins
+      containers:
+      - image: "docker-registry.default.svc:5000/{{.Release.Namespace}}/jenkins-master:{{ .Values.imageTag | default .Chart.Version }}"
+        name: jenkins-master
+        {{- if .Values.global.openshift }}
+        env: 
+        - name: OPENSHIFT
+          value: "true"
+        {{- end }}
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        - containerPort: 50000
+          protocol: TCP
+        resources:
+          limits:
+            cpu: {{ .Values.resources.master.limits.cpu | quote }}
+            memory: {{ .Values.resources.master.limits.memory | quote }}
+          requests:
+            cpu: {{ .Values.resources.master.requests.cpu | quote }}
+            memory: {{ .Values.resources.master.requests.memory | quote }}
+        volumeMounts:
+          - name: jenkins-job-dsl
+            mountPath: /var/jenkins_home/init.jobdsl.d
+          - name: jenkins-library-configuration
+            mountPath: /var/jenkins_home/init.groovy.d/configure_user_pipeline_libraries.groovy
+            subPath: configure_user_pipeline_libraries.groovy
+          - name: jenkins-credential-configuration
+            mountPath: /var/jenkins_home/init.groovy.d/configure_credentials.groovy
+            subPath: configure_credentials.groovy
+        securityContext:
+          privileged: true
+      volumes:
+        - name: jenkins-job-dsl
+          configMap:
+            name: jenkins-job-dsl
+            items:
+              - key: job-dsl
+                path: sdp-orgs.groovy
+        - name: jenkins-library-configuration
+          configMap:
+            name: jenkins-library-configuration
+            items:
+              - key: library-configuration
+                path: configure_user_pipeline_libraries.groovy
+        - name: jenkins-credential-configuration
+          secret:
+            secretName: jenkins-credential-configuration
+            items:
+            - key: credential-configuration
+              path: configure_credentials.groovy

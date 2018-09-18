@@ -1,0 +1,20 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+{{- if .Values.global.openshift }}
+kind: Route
+apiVersion: "route.openshift.io/v1"
+metadata:
+  #note: this name must match the oauth redirect used in the jenkins-sa chart
+  name: jenkins
+  namespace: {{ .Release.Namespace }}
+spec:
+  {{- if .Values.domain }}
+  host: "{{.Values.subdomain}}.{{.Values.domain}}"
+  {{- else if .Values.global.domain }}
+  host: "{{.Values.subdomain}}.{{.Values.global.domain}}"
+  {{- end }}
+  to:
+    kind: Service
+    name: jenkins-master
+{{- end }}

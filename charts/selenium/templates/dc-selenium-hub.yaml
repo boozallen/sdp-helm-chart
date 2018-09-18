@@ -1,0 +1,43 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  labels:
+    app: selenium
+    node: hub
+  name: selenium-hub
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    app: selenium
+    deploymentconfig: selenium-hub
+    node: hub
+  template:
+    metadata:
+      labels:
+        app: selenium
+        deploymentconfig: selenium-hub
+        node: hub
+    spec:
+      containers:
+        - image: selenium/hub:{{ .Values.imageTag | default .Chart.AppVersion }}
+          imagePullPolicy: IfNotPresent
+          name: selenium-hub
+          ports:
+            - containerPort: 4444
+              protocol: TCP
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - selenium-hub
+        from:
+          kind: ImageStreamTag
+          name: 'selenium-hub:{{ .Values.imageTag | default .Chart.AppVersion }}'
+          namespace: {{ .Release.Namespace }}
+      type: ImageChange
+

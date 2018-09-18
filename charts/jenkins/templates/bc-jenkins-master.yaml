@@ -1,0 +1,37 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+{{- if .Values.global.openshift }}
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: jenkins-master
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: jenkins
+spec:
+  source:
+    type: Git
+    git:
+      ref: {{ .Values.sourceRepositoryBranch | default "master" }}
+      {{- if .Values.sourceRepositoryUrl }}
+      uri: {{ .Values.sourceRepositoryUrl }}
+      {{- else }}
+      uri: {{ .Values.global.sourceRepositoryUrl }}
+      {{- end }}
+    contextDir: {{ .Values.masterDockerContextDir | quote }}
+    sourceSecret:
+      {{- if .Values.sourceSecret }}
+      name: {{ .Values.sourceSecret }}
+      {{- else }}
+      name: {{ .Values.global.sourceSecret }}
+      {{- end }}
+  strategy:
+    type: Docker
+  output:
+    to:
+      kind: ImageStreamTag
+      name: "jenkins-master:{{.Values.imageTag | default .Chart.Version}}"
+  triggers:
+  - type: ConfigChange
+{{- end }}

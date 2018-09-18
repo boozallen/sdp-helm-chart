@@ -1,0 +1,6 @@
+Successfully installed SonarQube:
+{{- if .Values.domain -}}
+{{ .Values.subdomain }}.{{ .Values.domain}}
+{{- else if .Values.global.domain -}}
+{{ .Values.subdomain }}.{{ .Values.global.domain }}
+{{- end -}}

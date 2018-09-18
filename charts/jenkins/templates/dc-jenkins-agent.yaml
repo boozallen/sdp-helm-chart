@@ -1,0 +1,145 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+{{- if .Values.global.persistentStorage -}} # use the StatefulSet
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+  name: jenkins-agent
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: jenkins
+    name: jenkins-agent
+spec:
+  replicas: {{ .Values.numAgents }}
+  selector:
+    matchLabels:
+      app: jenkins
+      statefulset: jenkins-agent
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - jenkins-agent
+        from:
+          kind: ImageStreamTag
+          name: "jenkins-agent:{{ .Values.imageTag | default .Chart.Version }}"
+  template:
+    metadata:
+      labels:
+        app: jenkins
+        statefulset: jenkins-agent
+    spec:
+      serviceAccountName: jenkins
+      containers:
+      - image: "docker-registry.default.svc:5000/{{.Release.Namespace}}/jenkins-agent:{{ .Values.imageTag | default .Chart.Version }}"
+        name: jenkins-agent
+        securityContext:
+          privileged: true
+        env:
+        - name: JENKINS_URL
+          value: "http://jenkins-master:8080/"
+        - name: JENKINS_TUNNEL
+          value: "jenkins-agent:50000"
+        - name: EXECUTORS
+          value: "1"
+        - name: JENKINS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: jenkins-access
+        - name: JENKINS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: jenkins-access
+        volumeMounts:
+        - name: docker-storage
+          mountPath: /var/lib/docker
+        resources:
+          limits:
+            cpu: {{ .Values.resources.agent.limits.cpu | quote }}
+            memory: {{ .Values.resources.agent.limits.memory | quote }}
+          requests:
+            cpu: {{ .Values.resources.agent.requests.cpu | quote }}
+            memory: {{ .Values.resources.agent.requests.memory | quote }}
+        securityContext:
+          privileged: true
+  volumeClaimTemplates:
+  - metadata:
+      name: docker-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.dockerStorage | default "100Gi" | quote }}
+
+
+{{- else -}} # Just use a DeploymentConfig
+
+kind: DeploymentConfig
+apiVersion: "apps.openshift.io/v1"
+metadata:
+  name: jenkins-agent
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: jenkins
+    name: jenkins-agent
+spec:
+  replicas: {{.Values.numAgents}}
+  selector:
+    app: jenkins
+    deploymentconfig: jenkins-agent
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - jenkins-agent
+        from:
+          kind: ImageStreamTag
+          name: "jenkins-agent:{{ .Values.imageTag | default .Chart.Version }}"
+  template:
+    metadata:
+      labels:
+        app: jenkins
+        deploymentconfig: jenkins-agent
+    spec:
+      serviceAccountName: jenkins
+      containers:
+      - image: "docker-registry.default.svc:5000/{{.Release.Namespace}}/jenkins-agent:{{ .Values.imageTag | default .Chart.Version }}"
+        name: "jenkins-agent"
+        securityContext:
+          privileged: true
+        env:
+        - name: DOCKER_DAEMON_ARGS
+          value: {{ .Values.dockerDaemonArgs | default "--insecure-registry dtr.microcaas.net --insecure-registry docker-registry.default.svc:5000" }}
+        - name: JENKINS_URL
+          value: "http://jenkins-master:8080/"
+        - name: JENKINS_TUNNEL
+          value: "jenkins-agent:50000"
+        - name: EXECUTORS
+          value: "1"
+        - name: JENKINS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: jenkins-access
+        - name: JENKINS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: jenkins-access
+        resources:
+          limits:
+            cpu: {{ .Values.resources.agent.limits.cpu | quote }}
+            memory: {{ .Values.resources.agent.limits.memory | quote }}
+          requests:
+            cpu: {{ .Values.resources.agent.requests.cpu | quote }}
+            memory: {{ .Values.resources.agent.requests.memory | quote }}
+        securityContext:
+          privileged: true
+  {{- end -}}

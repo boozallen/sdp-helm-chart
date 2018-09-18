@@ -1,0 +1,195 @@
+# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+
+{{- if .Values.global.openshift }}
+kind: List
+apiVersion: v1
+metadata:
+  name: pipeline-images
+items:
+
+- kind: ImageStream
+  apiVersion: "image.openshift.io/v1"
+  metadata:
+    name: a11y
+    namespace: {{ .Release.Namespace }}
+
+- kind: "BuildConfig"
+  apiVersion: "build.openshift.io/v1"
+  metadata:
+    name: a11y
+    namespace: {{ $.Release.Namespace }}
+  spec:
+    source:
+      type: "Git"
+      git:
+        ref: {{ $.Values.sourceRepositoryBranch | default "master" }}
+        {{- if $.Values.sourceRepositoryUrl }}
+        uri: {{ $.Values.sourceRepositoryUrl }}
+        {{- else }}
+        uri: {{ $.Values.global.sourceRepositoryUrl }}
+        {{- end }}
+      contextDir: "resources/jenkins-pipeline-images/a11y"
+      sourceSecret:
+        {{- if $.Values.sourceSecret }}
+        name: {{ $.Values.sourceSecret }}
+        {{- else }}
+        name: {{ $.Values.global.sourceSecret }}
+        {{- end }}
+    strategy:
+      type: "Docker"
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "a11y:latest"
+    triggers:
+      - type: ConfigChange
+
+- kind: ImageStream
+  apiVersion: "image.openshift.io/v1"
+  metadata:
+    name: openshift_helm
+    namespace: {{ .Release.Namespace }}
+
+- kind: "BuildConfig"
+  apiVersion: "build.openshift.io/v1"
+  metadata:
+    name: openshift-helm
+    namespace: {{ $.Release.Namespace }}
+  spec:
+    source:
+      type: "Git"
+      git:
+        ref: {{ $.Values.sourceRepositoryBranch | default "master" }}
+        {{- if $.Values.sourceRepositoryUrl }}
+        uri: {{ $.Values.sourceRepositoryUrl }}
+        {{- else }}
+        uri: {{ $.Values.global.sourceRepositoryUrl }}
+        {{- end }}
+      contextDir: "resources/jenkins-pipeline-images/openshift_helm"
+      sourceSecret:
+        {{- if $.Values.sourceSecret }}
+        name: {{ $.Values.sourceSecret }}
+        {{- else }}
+        name: {{ $.Values.global.sourceSecret }}
+        {{- end }}
+    strategy:
+      type: "Docker"
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "openshift_helm:latest"
+    triggers:
+      - type: ConfigChange
+
+- kind: ImageStream
+  apiVersion: "image.openshift.io/v1"
+  metadata:
+    name: protractor
+    namespace: {{ .Release.Namespace }}
+
+- kind: "BuildConfig"
+  apiVersion: "build.openshift.io/v1"
+  metadata:
+    name: protractor
+    namespace: {{ $.Release.Namespace }}
+  spec:
+    source:
+      type: "Git"
+      git:
+        ref: {{ $.Values.sourceRepositoryBranch | default "master" }}
+        {{- if $.Values.sourceRepositoryUrl }}
+        uri: {{ $.Values.sourceRepositoryUrl }}
+        {{- else }}
+        uri: {{ $.Values.global.sourceRepositoryUrl }}
+        {{- end }}
+      contextDir: "resources/jenkins-pipeline-images/protractor"
+      sourceSecret:
+        {{- if $.Values.sourceSecret }}
+        name: {{ $.Values.sourceSecret }}
+        {{- else }}
+        name: {{ $.Values.global.sourceSecret }}
+        {{- end }}
+    strategy:
+      type: "Docker"
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "protractor:latest"
+    triggers:
+      - type: ConfigChange
+
+- kind: ImageStream
+  apiVersion: "image.openshift.io/v1"
+  metadata:
+    name: sonar-scanner
+    namespace: {{ .Release.Namespace }}
+
+- kind: "BuildConfig"
+  apiVersion: "build.openshift.io/v1"
+  metadata:
+    name: sonar-scanner
+    namespace: {{ $.Release.Namespace }}
+  spec:
+    source:
+      type: "Git"
+      git:
+        ref: {{ $.Values.sourceRepositoryBranch | default "master" }}
+        {{- if $.Values.sourceRepositoryUrl }}
+        uri: {{ $.Values.sourceRepositoryUrl }}
+        {{- else }}
+        uri: {{ $.Values.global.sourceRepositoryUrl }}
+        {{- end }}
+      contextDir: "resources/jenkins-pipeline-images/sonar-scanner"
+      sourceSecret:
+        {{- if $.Values.sourceSecret }}
+        name: {{ $.Values.sourceSecret }}
+        {{- else }}
+        name: {{ $.Values.global.sourceSecret }}
+        {{- end }}
+    strategy:
+      type: "Docker"
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "sonar-scanner:latest"
+    triggers:
+      - type: ConfigChange
+
+- kind: ImageStream
+  apiVersion: "image.openshift.io/v1"
+  metadata:
+    name: zap
+    namespace: {{ .Release.Namespace }}
+
+- kind: "BuildConfig"
+  apiVersion: "build.openshift.io/v1"
+  metadata:
+    name: zap
+    namespace: {{ $.Release.Namespace }}
+  spec:
+    source:
+      type: "Git"
+      git:
+        ref: {{ $.Values.sourceRepositoryBranch | default "master" }}
+        {{- if $.Values.sourceRepositoryUrl }}
+        uri: {{ $.Values.sourceRepositoryUrl }}
+        {{- else }}
+        uri: {{ $.Values.global.sourceRepositoryUrl }}
+        {{- end }}
+      contextDir: "resources/jenkins-pipeline-images/zap"
+      sourceSecret:
+        {{- if $.Values.sourceSecret }}
+        name: {{ $.Values.sourceSecret }}
+        {{- else }}
+        name: {{ $.Values.global.sourceSecret }}
+        {{- end }}
+    strategy:
+      type: "Docker"
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "zap:latest"
+    triggers:
+      - type: ConfigChange
+{{- end }}
