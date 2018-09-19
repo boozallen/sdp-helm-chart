@@ -187,12 +187,6 @@ if (on_openshift){
 
 }
 
-// configure CMS github enterprise
-log "Creating Github Enterprise Endpoint for CSN"
-List<Endpoint> endpointList = new ArrayList<Endpoint>()
-endpointList.add(new Endpoint(sdp_github.api_url, "CSN GitHub"))
-GlobalConfiguration.all().get(GitHubConfiguration.class).setEndpoints(endpointList)
-
 // create jobs defined by JobDSL Scripts
 log "Creating jobs from JobDSL Scripts in ${System.getenv("JENKINS_HOME")}/init.jobdsl.d"
 def job_dsl = new File("${System.getenv("JENKINS_HOME")}/init.jobdsl.d")
