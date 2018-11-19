@@ -17,9 +17,9 @@ data:
       apiUri = {{ required "Required property .Values.githubOrganizations.apiUrl missing" .apiUrl | quote }}
       patternInclude = {{ .repoPattern | default ".*" | quote }}
       patternExclude = ""
-      scriptPath = {{ .entrypointScriptPath | default "resources/sdp/pipeline_entrypoint" | quote }}
+      scriptPath = {{ .entrypointScriptPath | default "resources/sdp/pipeline_entrypoint.groovy" | quote }}
       sandbox = {{ .sanbox | default false }}
-      entrypointRepo = {{ .entrypointRepo | default "https://github.com/boozallen/sdp-helm-chart" | quote }}
+      entrypointRepo = {{ .entrypointRepo | default "https://github.com/boozallen/sdp-pipeline-framework" | quote }}
       entrypointRepoCredId = {{ .entrypointRepoCredId | default .credentialID | quote }}
 
       organizationFolder githubOrg, {
