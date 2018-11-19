@@ -259,7 +259,7 @@ elif ([ "$SONARQUBE_SUBDOMAIN" = "" ] && [ "$GENERATE_SUBDOMAINS" = "1" ]); then
   HELM_OPTIONS+="--set sonarqube.subdomain=$SONARQUBE_SUBDOMAIN "
 fi
 
-if helm install $SCRIPT_DIR -n $DEPLOYMENT_NAME --tiller-namespace $DEPLOYMENT_NAME-tiller $HELM_OPTIONS --wait; then
+if helm install $SCRIPT_DIR -n $DEPLOYMENT_NAME --tiller-namespace $DEPLOYMENT_NAME-tiller $HELM_OPTIONS; then
     pass "Solutions Delivery Platform Installed"
 else
     fail "Solutions Delivery Platform Install Failed"
