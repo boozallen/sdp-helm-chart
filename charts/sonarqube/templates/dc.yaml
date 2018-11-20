@@ -1,69 +1,185 @@
 # Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
 # This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
 
-kind: DeploymentConfig
+kind: List
 apiVersion: "apps.openshift.io/v1"
 metadata:
-  name: sonarqube
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app: sonarqube
-    deploymentconfig: sonarqube
-spec:
-  strategy:
-    rollingParams:
-      post:
-        execNewPod:
-          env:
-          - name: JENKINS_USER
-            valueFrom:
-              secretKeyRef:
-                name: jenkins-access
-                key: jenkins-user
-          - name: JENKINS_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: jenkins-access
-                key: jenkins-password
-          command:
-          - /bin/sh
-          - /opt/sonarqube/post-install-on-sonarqube.sh
-          containerName: sonarqube-bootstrap
-        failurePolicy: ignore
-    type: Recreate
-  triggers:
-  - type: ConfigChange
-  - type: ImageChange
-    imageChangeParams:
-      automatic: true
-      containerNames:
-      - sonarqube
-      from:
-        kind: ImageStreamTag
-        name: sonarqube:{{ .Values.imageTag | default .Chart.Version }}
-  replicas: 1
-  selector:
-    name: sonarqube
-  template:
+  name: list
+items:
+  - kind: DeploymentConfig
+    apiVersion: "apps.openshift.io/v1"
     metadata:
+      name: sonarqube
+      namespace: {{ .Release.Namespace }}
       labels:
-        name: sonarqube
         app: sonarqube
         deploymentconfig: sonarqube
     spec:
-      containers:
-      - name: sonarqube
-        image: "docker-registry.default.svc:5000/{{.Release.Namespace}}/sonarqube:{{ .Values.imageTag | default .Chart.Version }}"
-        resources:
-          limits:
-            cpu: {{ .Values.resources.limits.cpu | quote }}
-            memory: {{ .Values.resources.limits.memory | quote }}
-          requests:
-            cpu: {{ .Values.resources.requests.cpu | quote }}
-            memory: {{ .Values.resources.requests.memory | quote }}
-        volumeMounts:
-        - mountPath: /opt/sonarqube/data
-          name: sonarqube-data
-      volumes:
-      - emptyDir: {}
-        name: sonarqube-data
+      strategy:
+        rollingParams:
+          post:
+            execNewPod:
+              env:
+              - name: JENKINS_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: jenkins-access
+                    key: jenkins-user
+              - name: JENKINS_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: jenkins-access
+                    key: jenkins-password
+              command:
+              - /bin/sh
+              - /opt/sonarqube/post-install-on-sonarqube.sh
+              containerName: sonarqube-bootstrap
+            failurePolicy: ignore
+        type: Recreate
+      triggers:
+      - type: ConfigChange
+      - type: ImageChange
+        imageChangeParams:
+          automatic: true
+          containerNames:
+          - sonarqube
+          from:
+            kind: ImageStreamTag
+            name: sonarqube:{{ .Values.imageTag | default .Chart.Version }}
+      replicas: 1
+      selector:
+        name: sonarqube
+      template:
+        metadata:
+          labels:
+            name: sonarqube
+            app: sonarqube
+            deploymentconfig: sonarqube
+        spec:
+          containers:
+          - name: sonarqube
+            image: "docker-registry.default.svc:5000/{{.Release.Namespace}}/sonarqube:{{ .Values.imageTag | default .Chart.Version }}"
+            imagePullSecrets: Always
+            imagePullPolicy: IfNotPresent
+            resources:
+              limits:
+                cpu: {{ .Values.resources.limits.cpu | quote }}
+                memory: {{ .Values.resources.limits.memory | quote }}
+              requests:
+                cpu: {{ .Values.resources.requests.cpu | quote }}
+                memory: {{ .Values.resources.requests.memory | quote }}
+            volumeMounts:
+              - name: sonarqube-data
+                mountPath: /opt/sonarqube/data
+              - name: sonarqube-credential-configuration
+                mountPath: /opt/sonarqube/data2
+          - name: configure-sonarqube
+            image: centos
+            imagePullSecrets: Always
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: API_USER
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-access
+                  key: username
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-access
+                  key: token
+            - name: SQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: sonarqube-credential-configuration
+                  key: username
+            - name: SQ_PW
+              valueFrom:
+                secretKeyRef:
+                  name: sonarqube-credential-configuration
+                  key: password
+            command: [ "/bin/bash" ]
+            args: [ "-c", "until curl -sL -w %{http_code} -u $API_USER:$API_TOKEN http://jenkins-master:8080 -o /dev/null | grep 200 ; do echo \"waiting on jenkins..\" && sleep 2; done && echo \"waiting on sonarqube...\" && until curl -s -u admin:admin http://localhost:9000/api/system/health | grep -i green ; do echo \"sleeping..\" && sleep 2; done && bash /scripts/script.sh && curl --user \"$API_USER:$API_TOKEN\" --data-urlencode \"script=$(< /scripts2/sonarqube-secret.groovy)\" http://jenkins-master:8080/scriptText && echo \"completed script...\" && tail -f /dev/null"]
+            livenessProbe:
+              exec:
+                command:
+                - /bin/sh
+                - '-c'
+                - curl -sL -w %{http_code} -u $API_USER:$API_TOKEN http://jenkins-master:8080/credentials/store/system/domain/_/credential/sonarqube/api/json -o /dev/null | grep 200
+              initialDelaySeconds: 5
+              periodSeconds: 5
+            volumeMounts:
+              - mountPath: /scripts
+                name: configure-sonarqube-mount
+              - mountPath: /scripts2
+                name: sonarqube-secret-config
+          volumes:
+            - name: configure-sonarqube-mount
+              configMap:
+                name: sonarqube-config
+                items:
+                - key: sonarqube.script
+                  path: script.sh
+            - name: sonarqube-secret-config
+              configMap:
+                name: sonarqube-inject
+                items:
+                - key: sonarqube-secret.script
+                  path: sonarqube-secret.groovy
+            - name: sonarqube-credential-configuration
+              secret:
+                secretName: sonarqube-credential-configuration
+                items:
+                - key: username
+                  path: username
+                - key: password
+                  path: password
+            - emptyDir: {}
+              name: sonarqube-data
+
+  - kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: sonarqube-inject
+      namespace: {{ .Release.Namespace }}
+      labels:
+        app: sonarqube
+    data:
+      sonarqube-secret.script: |
+        import com.cloudbees.plugins.credentials.impl.*
+        import com.cloudbees.plugins.credentials.domains.*
+        import jenkins.model.Jenkins
+        import hudson.plugins.sonar.SonarInstallation
+        import hudson.plugins.sonar.SonarRunnerInstallation
+        import hudson.plugins.sonar.SonarRunnerInstaller
+        import hudson.plugins.sonar.model.TriggersConfig
+        import hudson.tools.InstallSourceProperty
+        // Setup the Sonar Scanner configuration
+        def sonar = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarGlobalConfiguration")
+        sonar.setInstallations(new SonarInstallation("SonarQube","http://sonarqube:9000","", "5.3", "", new TriggersConfig(), ""))
+        def scanner = Jenkins.getInstance().getDescriptor("hudson.plugins.sonar.SonarRunnerInstallation")
+        def prop = new InstallSourceProperty([new SonarRunnerInstaller("3.0.3.778")])
+        scanner.setInstallations(new SonarRunnerInstallation("Sonar Scanner", "", [prop]))
+        scanner.save()
+  - kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: sonarqube-config
+      namespace: {{ .Release.Namespace }}
+      labels:
+        app: sonarqube
+    data:
+      sonarqube.script: |
+        curl -X POST -s -u admin:admin http://sonarqube:9000/api/users/create\?login\=$SQ_USER\&name\=user\&password\=$SQ_PW && \
+        curl -X POST --data "key=sonar.webhooks.global" --data "fieldValues={"name":$SQ_USER, "url":\"http://jenkins-master:8080/sonarqube-webhook/\"}" -u admin:admin http://sonarqube:9000/api/settings/set && \
+        curl -X POST --verbose -u "$API_USER:$API_TOKEN" -H $(curl -u $API_USER:$API_TOKEN 'http://jenkins-master:8080/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)') "http://jenkins-master:8080/credentials/store/system/domain/_/createCredentials" --data-urlencode 'json={
+          "": "0",
+          "credentials": {
+            "scope": "GLOBAL",
+            "id": "sonarqube",
+            "username": "'$SQ_USER'",
+            "password": "'$SQ_PW'",
+            "description": "sonarqube api credentials",
+            "stapler-class": "com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl"
+          }
+        }'
