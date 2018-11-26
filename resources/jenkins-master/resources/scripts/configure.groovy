@@ -44,6 +44,13 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.languages.GroovyLanguage
 import jenkins.model.JenkinsLocationConfiguration
 import org.jenkinsci.plugins.workflow.flow.FlowDurabilityHint
 
+//for sonar installation
+import hudson.plugins.sonar.SonarInstallation
+import hudson.plugins.sonar.SonarRunnerInstallation
+import hudson.plugins.sonar.SonarRunnerInstaller
+import hudson.plugins.sonar.model.TriggersConfig
+import hudson.tools.InstallSourceProperty
+
 
 ///////////////////
 // Define Constants
