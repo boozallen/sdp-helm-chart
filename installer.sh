@@ -212,18 +212,18 @@ else
 fi
 
 # # create github secret
-# echo -n "Enter GitHub User: "
-# read GH_USER
-#
-# echo -n "Enter GitHub Personal Access Token: "
-# read -s GH_PAT
-# echo
-#
-# if oc create secret generic github --from-literal=username="$GH_USER" --from-literal=password="$GH_PAT" > /dev/null; then
-#     pass "secret github created"
-# else
-#     fail "secret github created"
-# fi
+ echo -n "Enter GitHub User: "
+ read GH_USER
+
+ echo -n "Enter GitHub Personal Access Token: "
+ read -s GH_PAT
+ echo
+
+ if oc create secret generic github --from-literal=username="$GH_USER" --from-literal=password="$GH_PAT" > /dev/null; then
+     pass "secret github created"
+ else
+     fail "secret github created"
+ fi
 
 # give jenkins sa required permissions
 if oc adm policy add-scc-to-user privileged -z jenkins -n $DEPLOYMENT_NAME > /dev/null; then
