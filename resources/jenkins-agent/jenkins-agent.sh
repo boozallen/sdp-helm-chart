@@ -4,7 +4,7 @@
 # This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
 
 # Temporary way to login to docker registry
-oc whoami -t | docker login docker-registry.default.svc:5000 -u $REGISTRY_USERNAME --password-stdin
+# oc whoami -t | docker login docker-registry.default.svc:5000 -u $REGISTRY_USERNAME --password-stdin
 
 # jenkins swarm slave
 JAR=`ls -1 /opt/jenkins-slave/bin/swarm-client-*.jar | tail -n 1`
