@@ -16,7 +16,7 @@ jenkins_preboot
 CONTAINER_MEMORY_IN_BYTES=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
 CONTAINER_MEMORY_IN_MB=$((CONTAINER_MEMORY_IN_BYTES/2**20))
 
-# initialize java performance opts 
+# initialize java performance opts
 JAVA_PERFORMANCE_OPTS="-Dsun.zip.disableMemoryMapping=true -XX:+UnlockExperimentalVMOptions"
 
 # set heap settings
@@ -28,6 +28,18 @@ JAVA_PERFORMANCE_OPTS="$JAVA_PERFORMANCE_OPTS -Xmx${CONTAINER_HEAP_MAX}m"
 JAVA_GC_OPTS="-server -XX:+AlwaysPreTouch -XX:+UseG1GC -XX:+ExplicitGCInvokesConcurrent -XX:+ParallelRefProcEnabled -XX:+UseStringDeduplication -XX:+UnlockDiagnosticVMOptions -XX:G1SummarizeRSetStatsPeriod=1"
 JAVA_PERFORMANCE_OPTS="$JAVA_PERFORMANCE_OPTS $JAVA_GC_OPTS"
 
+# allow for multiple Jenkins Opts
+jenkins_opts_array=( )
+while IFS= read -r -d '' item; do
+  jenkins_opts_array+=( "$item" )
+done < <([[ $JENKINS_OPTS ]] && xargs printf '%s\0' <<<"$JENKINS_OPTS")
+
+# allow for multiple Java Opts
+java_opts_array=()
+while IFS= read -r -d '' item; do
+  java_opts_array+=( "$item" )
+done < <([[ $JAVA_OPTS ]] && xargs printf '%s\0' <<<"$JAVA_OPTS")
+
 ##########################################################
-echo java -Duser.home="$JENKINS_HOME" "$JAVA_OPTS" "$JAVA_PERFORMANCE_OPTS" -jar ${JENKINS_WAR} "$JENKINS_OPTS"
-exec java -Duser.home="$JENKINS_HOME" "$JAVA_OPTS" "$JAVA_PERFORMANCE_OPTS" -jar ${JENKINS_WAR} "$JENKINS_OPTS"
+echo java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" "$JAVA_PERFORMANCE_OPTS" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
+exec java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" "$JAVA_PERFORMANCE_OPTS" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
