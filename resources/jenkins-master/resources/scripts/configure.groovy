@@ -194,12 +194,12 @@ if (on_openshift){
   SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_1)
 
   log "Creating Openshift Docker Registry Secret in Jenkins Credential Store"
-  def cred_obj_2 = new UsernamePasswordCredentialsImpl(
+  def cred_obj_2 = (Credentials) new UsernamePasswordCredentialsImpl(
     CredentialsScope.GLOBAL,
     "openshift-docker-registry",
     "openshift-docker-registry",
     "service",
-    sa_token
+    sa_token.getPlainText()
   )
   SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_2)
 
