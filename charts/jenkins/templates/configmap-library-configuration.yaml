@@ -1,39 +1,39 @@
-# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
-# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
-
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: jenkins-library-configuration
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app: jenkins
-data:
-  library-configuration: |
-    import org.jenkinsci.plugins.workflow.libs.GlobalLibraries
-    import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource
-    import org.jenkinsci.plugins.workflow.libs.LibraryConfiguration
-    import org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever
-
-    pipeline_libs = GlobalLibraries.get().getLibraries()
-    [
-        {{- range .Values.pipelineLibraries }}
-        [
-            github_api_url: {{ required "Required property githubApiUrl missing on pipeline library." .githubApiUrl | quote }},
-            github_credential_id: {{ required "Required property githubCredentialID missing on pipeline library." .githubCredentialID | quote }},
-            org: {{ required "Required property org missing on pipeline library." .org | quote }},
-            repo: {{ required "Required property repo missing on pipeline library." .repo | quote }},
-            display_name: {{ required "Required property name missing on pipeline library." .name | quote }},
-            implicit: {{ .implicit | default false  }},
-            default_version: {{ .defaultVersion | default "master" | quote }}
-        ],
-        {{- end }}
-    ].each{ lib ->
-        def scm = new GitHubSCMSource(null, lib.github_api_url , 'SAME', lib.github_credential_id, lib.org, lib.repo)
-        def lib_conf = new LibraryConfiguration(lib.display_name, new SCMSourceRetriever(scm))
-        lib_conf.setImplicit(lib.implicit)
-        lib_conf.setDefaultVersion(lib.default_version)
-        lib_conf.setAllowVersionOverride(true)
-        pipeline_libs.push(lib_conf)
-    }
-    GlobalLibraries.get().setLibraries(pipeline_libs)
+# # Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
+# # This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+#
+# kind: ConfigMap
+# apiVersion: v1
+# metadata:
+#   name: jenkins-library-configuration
+#   namespace: {{ .Release.Namespace }}
+#   labels:
+#     app: jenkins
+# data:
+#   library-configuration: |
+#     import org.jenkinsci.plugins.workflow.libs.GlobalLibraries
+#     import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource
+#     import org.jenkinsci.plugins.workflow.libs.LibraryConfiguration
+#     import org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever
+#
+#     pipeline_libs = GlobalLibraries.get().getLibraries()
+#     [
+#         {{- range .Values.pipelineLibraries }}
+#         [
+#             github_api_url: {{ required "Required property githubApiUrl missing on pipeline library." .githubApiUrl | quote }},
+#             github_credential_id: {{ required "Required property githubCredentialID missing on pipeline library." .githubCredentialID | quote }},
+#             org: {{ required "Required property org missing on pipeline library." .org | quote }},
+#             repo: {{ required "Required property repo missing on pipeline library." .repo | quote }},
+#             display_name: {{ required "Required property name missing on pipeline library." .name | quote }},
+#             implicit: {{ .implicit | default false  }},
+#             default_version: {{ .defaultVersion | default "master" | quote }}
+#         ],
+#         {{- end }}
+#     ].each{ lib ->
+#         def scm = new GitHubSCMSource(null, lib.github_api_url , 'SAME', lib.github_credential_id, lib.org, lib.repo)
+#         def lib_conf = new LibraryConfiguration(lib.display_name, new SCMSourceRetriever(scm))
+#         lib_conf.setImplicit(lib.implicit)
+#         lib_conf.setDefaultVersion(lib.default_version)
+#         lib_conf.setAllowVersionOverride(true)
+#         pipeline_libs.push(lib_conf)
+#     }
+#     GlobalLibraries.get().setLibraries(pipeline_libs)
