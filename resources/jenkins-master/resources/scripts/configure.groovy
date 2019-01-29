@@ -189,7 +189,7 @@ if (on_openshift){
     CredentialsScope.GLOBAL,
     "openshift-service-account",
     "OCP Jenkins Service Account API Token",
-    sa_token
+    new Secret(get_sa_token.text)
   )
   SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_1)
 
@@ -199,9 +199,8 @@ if (on_openshift){
     "openshift-docker-registry",
     "openshift-docker-registry",
     "service",
-    sa_token.getPlainText()
+    get_sa_token.text
   )
-  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_2)
 
 }
 
