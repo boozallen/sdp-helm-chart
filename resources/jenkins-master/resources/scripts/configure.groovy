@@ -184,13 +184,24 @@ if (on_openshift){
   log "Creating OpenShift Service Account Secret in Jenkins Credential Store"
   def get_sa_token = "oc whoami -t".execute()
   get_sa_token.waitFor()
-  def cred_obj = new OpenShiftTokenCredentials(
+  sa_token = new Secret(get_sa_token.text)
+  def cred_obj_1 = new OpenShiftTokenCredentials(
     CredentialsScope.GLOBAL,
     "openshift-service-account",
     "OCP Jenkins Service Account API Token",
-    new Secret(get_sa_token.text)
+    sa_token
   )
-  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj)
+  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_1)
+
+  log "Creating Openshift Docker Registry Secret in Jenkins Credential Store"
+  def cred_obj_2 = new UsernamePasswordCredentialsImpl(
+    CredentialsScope.GLOBAL,
+    "openshift-docker-registry",
+    "openshift-docker-registry",
+    "service",
+    sa_token
+  )
+  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_2)
 
 }
 
