@@ -67,13 +67,13 @@ if (on_openshift){
   jenkins_secret = "jenkins-access"
 }
 
-sdp_github = [
-  api_url: "https://api.github.com",
-  org: "boozallen",
-  repo: "sdp-pipeline-framework",
-  credential_id: "github",
-  //enterprise: true
-]
+// sdp_github = [ // Removing 1/29/19 (K.O.)
+//   api_url: "https://api.github.com",
+//   org: "boozallen",
+//   repo: "sdp-pipeline-framework",
+//   credential_id: "github",
+//   //enterprise: true
+// ]
 
 ////////////////
 
@@ -212,27 +212,27 @@ log "Configuring optmized agent pod deregistration settings"
 jenkins.injector.getInstance(hudson.slaves.ChannelPinger.class).@pingIntervalSeconds = 1
 jenkins.injector.getInstance(hudson.slaves.ChannelPinger.class).@pingTimeoutSeconds = 10
 
-// configure pipeline libraries
-pipeline_libs = []
-if(on_openshift){
-  log "Configuring SDP global library"
-  def scm = new GitHubSCMSource(null, sdp_github.api_url, 'SAME', sdp_github.credential_id, sdp_github.org, sdp_github.repo)
-  def lib_conf = new LibraryConfiguration("solutions_delivery_platform", new SCMSourceRetriever(scm))
-  lib_conf.setImplicit(false)
-  lib_conf.setDefaultVersion("master")
-  lib_conf.setAllowVersionOverride(true)
-  pipeline_libs.push(lib_conf)
-}else{
-  // locally, check for mounted libraries and configure via filesystem scm plugin
-  def local_libs = new File("${System.getenv("JENKINS_HOME")}/local_libraries")
-  local_libs.eachDir{ lib ->
-    def scm = new FSSCM(lib.path, false, false, null)
-    def lib_conf = new LibraryConfiguration(lib.name, new SCMRetriever(scm))
-    lib_conf.setImplicit(false)
-    pipeline_libs.push(lib_conf)
-  }
-}
-GlobalLibraries.get().setLibraries(pipeline_libs)
+// configure pipeline libraries - Removing 1/29/19 (K.O.)
+// pipeline_libs = []
+// if(on_openshift){
+//   log "Configuring SDP global library"
+//   def scm = new GitHubSCMSource(null, sdp_github.api_url, 'SAME', sdp_github.credential_id, sdp_github.org, sdp_github.repo)
+//   def lib_conf = new LibraryConfiguration("solutions_delivery_platform", new SCMSourceRetriever(scm))
+//   lib_conf.setImplicit(false)
+//   lib_conf.setDefaultVersion("master")
+//   lib_conf.setAllowVersionOverride(true)
+//   pipeline_libs.push(lib_conf)
+// }else{
+//   // locally, check for mounted libraries and configure via filesystem scm plugin
+//   def local_libs = new File("${System.getenv("JENKINS_HOME")}/local_libraries")
+//   local_libs.eachDir{ lib ->
+//     def scm = new FSSCM(lib.path, false, false, null)
+//     def lib_conf = new LibraryConfiguration(lib.name, new SCMRetriever(scm))
+//     lib_conf.setImplicit(false)
+//     pipeline_libs.push(lib_conf)
+//   }
+// }
+// GlobalLibraries.get().setLibraries(pipeline_libs)
 
 // additional security settings
 log "Turning on Agent -> Master Control"

@@ -30,10 +30,11 @@ RUN chmod 777 /var/jenkins_home/init.groovy.d/*
 # RUN chmod 777 /var/jenkins_home/init.jobdsl.d/*
 
 # insert SDP entrypiont
-COPY resources/scripts/sdp_entrypoint.groovy /usr/share/jenkins/ref/sdp_entrypoint.groovy
+# COPY resources/scripts/sdp_entrypoint.groovy /usr/share/jenkins/ref/sdp_entrypoint.groovy # Removing 1/29/19 (K.O.)
 
-# copy in custom common-workflow plugin
-COPY resources/plugins/common-workflow.hpi /usr/share/jenkins/ref
+# copy in custom common-workflow plugin & jte plugin
+# COPY resources/plugins/common-workflow.hpi /usr/share/jenkins/ref # Removing 1/29/19 (K.O.)
+COPY resources/plugins/jte.jpi /usr/share/jenkins/ref
 
 # copy in entry point scripts
 COPY resources/scripts/jenkins-preboot.sh /usr/local/bin/jenkins_preboot
