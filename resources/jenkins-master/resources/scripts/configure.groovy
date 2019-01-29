@@ -195,17 +195,17 @@ if (on_openshift){
 }
 
 // create jobs defined by JobDSL Scripts
-log "Creating jobs from JobDSL Scripts in ${System.getenv("JENKINS_HOME")}/init.jobdsl.d"
-def job_dsl = new File("${System.getenv("JENKINS_HOME")}/init.jobdsl.d")
-def jobManagement = new JenkinsJobManagement(System.out, [:], new File("."))
-job_dsl.eachFileRecurse (FileType.FILES) { script ->
-  log "  - ${script.name}"
-  try{
-  	new DslScriptLoader(jobManagement).runScript(script.text)
-  }catch(any){
-    log "  ERROR: ${any}"
-  }
-}
+// log "Creating jobs from JobDSL Scripts in ${System.getenv("JENKINS_HOME")}/init.jobdsl.d" // Removing 1/29/19 (K.O.)
+// def job_dsl = new File("${System.getenv("JENKINS_HOME")}/init.jobdsl.d")
+// def jobManagement = new JenkinsJobManagement(System.out, [:], new File("."))
+// job_dsl.eachFileRecurse (FileType.FILES) { script ->
+//   log "  - ${script.name}"
+//   try{
+//   	new DslScriptLoader(jobManagement).runScript(script.text)
+//   }catch(any){
+//     log "  ERROR: ${any}"
+//   }
+// }
 
 // optimize agents disconnecting post termination
 log "Configuring optmized agent pod deregistration settings"
