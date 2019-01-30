@@ -12,8 +12,6 @@ subdomain: jenkins
 masterDockerContextDir: resources/jenkins-master
 agentDockerContextDir: resources/jenkins-agent
 numAgents: 4
-#githubOrganizations: null
-#pipelineLibraries: null
 #sourceRepositoryUrl: null
 #sourceRepositoryBranch: null # defaults to master
 #imageTag: null # defaults to .Chart.version

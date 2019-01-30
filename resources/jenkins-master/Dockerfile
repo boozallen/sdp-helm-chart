@@ -24,16 +24,7 @@ RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 COPY resources/scripts/configure.groovy /var/jenkins_home/init.groovy.d/configure.groovy
 RUN chmod 777 /var/jenkins_home/init.groovy.d/*
 
-# insert job dsl scripts
-# RUN mkdir -p /var/jenkins_home/init.jobdsl.d
-# COPY resources/jobs/* /var/jenkins_home/init.jobdsl.d/
-# RUN chmod 777 /var/jenkins_home/init.jobdsl.d/*
-
-# insert SDP entrypiont
-# COPY resources/scripts/sdp_entrypoint.groovy /usr/share/jenkins/ref/sdp_entrypoint.groovy # Removing 1/29/19 (K.O.)
-
-# copy in custom common-workflow plugin & jte plugin
-# COPY resources/plugins/common-workflow.hpi /usr/share/jenkins/ref # Removing 1/29/19 (K.O.)
+# copy in jte plugin #TODO: consider building this as part of a multistage Dockerfile
 COPY resources/plugins/jte.jpi /usr/share/jenkins/ref
 
 # copy in entry point scripts
