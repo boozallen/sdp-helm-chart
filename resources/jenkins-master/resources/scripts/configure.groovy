@@ -185,7 +185,7 @@ if (on_openshift){
   def get_sa_token = "oc whoami -t".execute()
   get_sa_token.waitFor()
   sa_token = get_sa_token.text
-  lob "DEGUGGING: ${sa_token}"
+  log "DEGUGGING: ${sa_token}"
   def cred_obj_1 = new OpenShiftTokenCredentials(
     CredentialsScope.GLOBAL,
     "openshift-service-account",
