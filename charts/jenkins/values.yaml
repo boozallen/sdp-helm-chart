@@ -21,17 +21,17 @@ numAgents: 4
 resources:
   master:
     limits:
-      cpu: "1500m"
-      memory: "5000Mi"
+      cpu: "1000m"
+      memory: "2000Mi"
     requests:
-      cpu: "1500m"
-      memory: "5000Mi"
+      cpu: "1000m"
+      memory: "2000Mi"
   agent:
     limits:
-      cpu: "1500m"
-      memory: "5000Mi"
+      cpu: "1000m"
+      memory: "1500Mi"
     requests:
-      cpu: "1500m"
-      memory: "5000Mi"
+      cpu: "1000m"
+      memory: "1500Mi"
 dockerStorage: "100Gi"
 dockerDaemonArgs: "--insecure-registry docker-registry.default.svc:5000"
