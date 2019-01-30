@@ -158,10 +158,10 @@ Example Configuration
       master:
         limits:
           cpu: "1000m"
-          memory: "2000Mi"
+          memory: "3000Mi"
         requests:
           cpu: "1000m"
-          memory: "2000Mi"
+          memory: "3000Mi"
       agent:
         limits:
           cpu: "1000m"
