@@ -184,8 +184,7 @@ if (on_openshift){
   log "Creating OpenShift Service Account Secret in Jenkins Credential Store"
   def get_sa_token = "oc whoami -t".execute()
   get_sa_token.waitFor()
-  sa_token = get_sa_token.text
-  log "DEGUGGING: ${sa_token}"
+  sa_token = get_sa_token.text - '\n'
   def cred_obj_1 = new OpenShiftTokenCredentials(
     CredentialsScope.GLOBAL,
     "openshift-service-account",
