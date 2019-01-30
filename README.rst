@@ -194,15 +194,11 @@ script.
 
 Supply a GitHub username and password (or access token) when prompted.
 
-++++++++++++++++++++++++
+************************
 Installer Script Options
-++++++++++++++++++++++++
+************************
 
-Run `./installer.sh -h` to the installer script's options
-
-
-
-
+Run ``./installer.sh -h`` to view the installer script's options.
 
 .. _Solutions Delivery Platform: https://boozallen.github.io/sdp-pipeline-framework/html/index.html
 .. _Kubernetes website: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
