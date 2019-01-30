@@ -225,6 +225,8 @@ fi
      fail "secret github created"
  fi
 
+ HELM_OPTIONS="--set jenkins.credentials.github.username=$GH_USER,jenkins.credentials.github.password=$GH_PAT,jenkins.credentials.github.id=github "
+
 # give jenkins sa required permissions
 if oc adm policy add-scc-to-user privileged -z jenkins -n $DEPLOYMENT_NAME > /dev/null; then
     pass "make jenkins sa privileged"
@@ -243,7 +245,6 @@ fi
 # install SDP chart
 title "Helm Install"
 
-HELM_OPTIONS=""
 
 if [ ! "$JENKINS_SUBDOMAIN" = "" ]; then
   HELM_OPTIONS+="--set jenkins.subdomain=$JENKINS_SUBDOMAIN "
