@@ -33,13 +33,12 @@ Configure the chart by customizing the ``values.yaml`` file.
     subdomain:               String       The prefix for your Jenkins URL (i.e. subdomain.example.com)
     masterDockerContextDir:  String       The directory containing your Jenkins-master source code
     agentDockerContextDir:   String       The directory containing your Jenkins-agent source code
-    numAgents:               (Pos.) Int   The number of Jenkins-agents to create
-    githubOrganizations:     Map          See below
-    pipelineLibraries:       Map          See below
+    numAgents:               (+)Int       The number of Jenkins-agents to create
     sourceRepositoryUrl:     String       A default github repository containing SDP image source code (i.e. this one)
     sourceRepositoryBranch:  String       The branch of your context directories to use
     imageTag:                String       What to tag the Jenkins images (master/agent) you create as part of the install
     sourceSecret:            String       overwrites global.sourceSecret for the Jenkins source repositories
+    credentials:             Map          See below
     resources:               Map          See below
     dockerStorage:           String       Sets the amount of storage reserved for the Jenkins-agents' docker daemon (only used if persistentStorage is true)
     dockerDaemonArgs:        string       Supplies args for the docker daemon running in the Jenkins agent (only used if persistentStorage is false)
@@ -60,61 +59,17 @@ Configure the chart by customizing the ``values.yaml`` file.
 Configuring Jenkins
 *******************
 
-++++++++++++++++++++
-GitHub Organizations
-++++++++++++++++++++
+++++++++++++++++++++++
+Credentials (Optional)
+++++++++++++++++++++++
 
-Set the GitHub Organization(s) to watch:
+While the installation process automatically creates and stores the credentials
+necessary for most users, you can set additional credentials you want available
+to Jenkins. These can be credentials for different GitHub users, artifact
+repositories, or services you wish to use as part of your CI/CD pipeline.
 
-::
-
-  jenkins:
-    githubOrganizations:
-    - name:         Required. The GitHub Organization For SDP To Serve
-      displayName:  Required. The Jenkins Job Display Name
-      credentialID: Required. The Jenkins Credential ID To Access This Organization
-      apiUrl:       Required. The GitHub API URL
-      repoPattern:  Optional. Regex of Repositories to watch. Default is ".*"
-    - ... (multiple can be defined)
-
-++++++++++++++++++
-Pipeline Libraries
-++++++++++++++++++
-
-Set the Jenkins Pipeline Libraries.  This should minimally include your organization's
-pipeline configuration repository.  You can also include any pipeline libraries that will
-be used in addition to the SDP pipeline-framework monorepo.
-
-::
-
-  jenkins:
-    pipelineLibraries:
-    - name:               Required. Library ID to reference when loading
-      githubApiUrl:       Required. GitHub API URL
-      githubCredentialID: Required. Jenkins Credential ID to Access Library Repo
-      org:                Required. Name of GitHub Organization Containing Library
-      repo:               Required. Name of GitHub Repository
-      implicit:           Optional. Whether to Load Library Implicitly. Default false.
-      defaultVersion:     Optional. Default Branch of Library to Load. Default master.
-    - ... (multiple can be defined)
-
-+++++++++++
-Credentials
-+++++++++++
-
-Set the credentials you want available to Jenkins and other components of SDP.
-These can be credentials for
-
-
-At minimum you need to include a github credential that can be used to read the
-repositories in the Solutions-Delivery-Platform Github Organization. If those
-credentials can't also be used to read the Pipeline Libraries and Github Organizations
-you specify, then you will need to add additional credentials for those.
-
-You need to give your default GitHub credential the id "github", as a GitHub
-credential by that name is required to run the Jenkins pipeline. For this default
-GitHub credential, the username should be your GitHub username, and the password
-an access token for that account.
+Any credentials you list here are automatically added to the Jenkins credential
+store.
 
 ::
 
@@ -124,6 +79,13 @@ an access token for that account.
       username:  Required. The username for the credential
       password:  Required. The password for the credential
     - ... (multiple can be defined)
+
+The credentials that are created automatically (**and should not be listed in the values file**) are:
+
+* github: the GitHub credential supplied by the user during the installation
+* openshift-service-account: the credentials for the jenkins ServiceAccount that Jenkins uses to authenticate to Openshift
+* openshift-docker-registry: the same as above, but in a more convenient username/password format; use this for the sdp and docker SDP libraries
+* sonarqube: credentials for interfacing w/ the Sonarqube server deployed alongside Jenkins
 
 ++++++++++++++++++++
 Resources (Optional)
@@ -136,7 +98,7 @@ consuming too many resources. Together, this ensures quality of service for Jenk
 and the other containers on the cluster.
 
 Note that you shouldn't need to configure this in order to set up SDP, as sensible
-defaults have already been set as defaults.
+defaults have already been set.
 
 More information on resource requests and limits can be found on the `Kubernetes website`_,
 but note that users are currently restricted to placing requests and limits on cpu and memory.
@@ -182,32 +144,11 @@ Example Configuration
     domain: apps.ocp.example.com
 
   jenkins:
-    masterDockerContextDir: resources/jenkins-master
-    agentDockerContextDir: resources/jenkins-agent
     numAgents: 4
-
-    # GitHub Orgs to watch
-    githubOrganizations:
-    - name: terrana-steven
-      displayName: Steven Terrana
-      credentialID: github
-      apiUrl: "https://api.github.com"
-    - name: Red-Hat-Summit
-      displayName: Red Hat Summit
-      credentialID: github
-      apiUrl: "https://api.github.com"
-
-    # Pipeline Configuration Repository
-    pipelineLibraries:
-    - name: red-hat-summit
-      githubApiUrl: "https://api.github.com"
-      githubCredentialID: github
-      org: Red-Hat-Summit
-      repo: pipeline-configuration
 
     #Github Username and Access Token
     credentials:
-    - id: github
+    - id: doe-john-github
       username: doe-john
       password: 1234abcd5678efgh
 
@@ -216,37 +157,48 @@ Example Configuration
     resources:
       master:
         limits:
-          cpu: "1500m"
-          memory: "5000Mi"
+          cpu: "1000m"
+          memory: "2000Mi"
         requests:
-          cpu: "1500m"
-          memory: "5000Mi"
+          cpu: "1000m"
+          memory: "2000Mi"
       agent:
         limits:
-          cpu: "1500m"
-          memory: "5000Mi"
+          cpu: "1000m"
+          memory: "1500Mi"
         requests:
-          cpu: "1500m"
-          memory: "5000Mi"
+          cpu: "1000m"
+          memory: "1500Mi"
 
   sonarqube:
     enabled: true
     resources:
       limits:
-        cpu: "1500m"
-        memory: "5000Mi"
+        cpu: "150m"
+        memory: "2000Mi"
       requests:
-        cpu: "1500m"
-        memory: "5000Mi"
+        cpu: "150m"
+        memory: "2000Mi"
 
 
 ========================
 Run the Installer Script
 ========================
 
+From your terminal, login to Openshift as a cluster-admin and run the installer
+script.
+
 .. code:: shell
 
     ./installer.sh
+
+Supply a GitHub username and password (or access token) when prompted.
+
+++++++++++++++++++++++++
+Installer Script Options
+++++++++++++++++++++++++
+
+Run `./installer.sh -h` to the installer script's options
 
 
 
