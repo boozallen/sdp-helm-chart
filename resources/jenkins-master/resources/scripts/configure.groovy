@@ -201,6 +201,8 @@ if (on_openshift){
     "service",
     sa_token
   )
+  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_2)
+
 
 }
 
