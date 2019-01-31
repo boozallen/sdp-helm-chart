@@ -4,6 +4,7 @@
 FROM jenkins/jenkins:2.121.3
 
 ENV JAVA_OPTS "-Djenkins.install.runSetupWizard=false"
+ENV JTE_RELEASE "v0.1-alpha"
 
 EXPOSE 8080
 EXPOSE 50000
@@ -25,7 +26,7 @@ COPY resources/scripts/configure.groovy /var/jenkins_home/init.groovy.d/configur
 RUN chmod 777 /var/jenkins_home/init.groovy.d/*
 
 # copy in jte plugin #TODO: consider building this as part of a multistage Dockerfile
-COPY resources/plugins/jte.jpi /usr/share/jenkins/ref
+ADD https://github.com/boozallen/jenkins-templating-engine/releases/download/$JTE_RELEASE/jte.jpi /usr/share/jenkins/ref
 
 # copy in entry point scripts
 COPY resources/scripts/jenkins-preboot.sh /usr/local/bin/jenkins_preboot
