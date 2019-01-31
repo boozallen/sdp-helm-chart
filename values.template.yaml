@@ -7,28 +7,13 @@ global:
 
 # something
 jenkins:
-  githubOrganizations: # Replace the example below with the GitHub Organizations the pipeline should serve
-  - name: MyProject
-    displayName: "My Project"
-    credentialID: github
-    apiUrl: "https://api.github.com"
-  pipelineLibraries: # Replace the example below with the pipeline config libraries you want to make available
-  - name: red-hat-summit
-    githubApiUrl: "https://api.github.com"
-    githubCredentialID: github
-    org: Red-Hat-Summit
-    repo: pipeline-configuration
-
-  # Replace the username and password below with your GitHub username and
-  # access token, then add any additional credentials you need
-  credentials:
-  - id: "github"
-    username: "username"
-    password: "password"
+  numAgents: 4 # Set this to the desired number of Jenkins Agents/Executors
   # Configure additional Jenkins variables as necessary
 
 sonarqube:
   enabled: true
+  # Configure additional Sonarqube variables as necessary
 
 selenium:
   enabled: true
+  # Configure additional Selenium variables as necessary

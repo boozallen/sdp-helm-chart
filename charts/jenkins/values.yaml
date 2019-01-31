@@ -12,8 +12,6 @@ subdomain: jenkins
 masterDockerContextDir: resources/jenkins-master
 agentDockerContextDir: resources/jenkins-agent
 numAgents: 4
-#githubOrganizations: null
-#pipelineLibraries: null
 #sourceRepositoryUrl: null
 #sourceRepositoryBranch: null # defaults to master
 #imageTag: null # defaults to .Chart.version
@@ -21,17 +19,17 @@ numAgents: 4
 resources:
   master:
     limits:
-      cpu: "1500m"
-      memory: "5000Mi"
+      cpu: "1000m"
+      memory: "3000Mi"
     requests:
-      cpu: "1500m"
-      memory: "5000Mi"
+      cpu: "1000m"
+      memory: "3000Mi"
   agent:
     limits:
-      cpu: "1500m"
-      memory: "5000Mi"
+      cpu: "1000m"
+      memory: "1500Mi"
     requests:
-      cpu: "1500m"
-      memory: "5000Mi"
+      cpu: "1000m"
+      memory: "1500Mi"
 dockerStorage: "100Gi"
 dockerDaemonArgs: "--insecure-registry docker-registry.default.svc:5000"

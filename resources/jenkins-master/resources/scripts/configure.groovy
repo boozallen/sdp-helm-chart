@@ -52,9 +52,9 @@ import hudson.plugins.sonar.model.TriggersConfig
 import hudson.tools.InstallSourceProperty
 
 
-///////////////////
-// Define Constants
-///////////////////
+//////////////////////
+// Define Constants //
+//////////////////////
 
 Boolean on_openshift = System.getenv("OPENSHIFT") ? true : false
 
@@ -66,14 +66,6 @@ if (on_openshift){
 
   jenkins_secret = "jenkins-access"
 }
-
-sdp_github = [
-  api_url: "https://api.github.com",
-  org: "boozallen",
-  repo: "sdp-pipeline-framework",
-  credential_id: "github",
-  //enterprise: true
-]
 
 ////////////////
 
@@ -184,55 +176,32 @@ if (on_openshift){
   log "Creating OpenShift Service Account Secret in Jenkins Credential Store"
   def get_sa_token = "oc whoami -t".execute()
   get_sa_token.waitFor()
-  def cred_obj = new OpenShiftTokenCredentials(
+  sa_token = get_sa_token.text - '\n'
+  def cred_obj_1 = new OpenShiftTokenCredentials(
     CredentialsScope.GLOBAL,
     "openshift-service-account",
     "OCP Jenkins Service Account API Token",
-    new Secret(get_sa_token.text)
+    new Secret(sa_token)
   )
-  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj)
+  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_1)
 
-}
+  log "Creating Openshift Docker Registry Secret in Jenkins Credential Store"
+  def cred_obj_2 = (Credentials) new UsernamePasswordCredentialsImpl(
+    CredentialsScope.GLOBAL,
+    "openshift-docker-registry",
+    "openshift-docker-registry",
+    "service",
+    sa_token
+  )
+  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_2)
 
-// create jobs defined by JobDSL Scripts
-log "Creating jobs from JobDSL Scripts in ${System.getenv("JENKINS_HOME")}/init.jobdsl.d"
-def job_dsl = new File("${System.getenv("JENKINS_HOME")}/init.jobdsl.d")
-def jobManagement = new JenkinsJobManagement(System.out, [:], new File("."))
-job_dsl.eachFileRecurse (FileType.FILES) { script ->
-  log "  - ${script.name}"
-  try{
-  	new DslScriptLoader(jobManagement).runScript(script.text)
-  }catch(any){
-    log "  ERROR: ${any}"
-  }
+
 }
 
 // optimize agents disconnecting post termination
 log "Configuring optmized agent pod deregistration settings"
 jenkins.injector.getInstance(hudson.slaves.ChannelPinger.class).@pingIntervalSeconds = 1
 jenkins.injector.getInstance(hudson.slaves.ChannelPinger.class).@pingTimeoutSeconds = 10
-
-// configure pipeline libraries
-pipeline_libs = []
-if(on_openshift){
-  log "Configuring SDP global library"
-  def scm = new GitHubSCMSource(null, sdp_github.api_url, 'SAME', sdp_github.credential_id, sdp_github.org, sdp_github.repo)
-  def lib_conf = new LibraryConfiguration("solutions_delivery_platform", new SCMSourceRetriever(scm))
-  lib_conf.setImplicit(false)
-  lib_conf.setDefaultVersion("master")
-  lib_conf.setAllowVersionOverride(true)
-  pipeline_libs.push(lib_conf)
-}else{
-  // locally, check for mounted libraries and configure via filesystem scm plugin
-  def local_libs = new File("${System.getenv("JENKINS_HOME")}/local_libraries")
-  local_libs.eachDir{ lib ->
-    def scm = new FSSCM(lib.path, false, false, null)
-    def lib_conf = new LibraryConfiguration(lib.name, new SCMRetriever(scm))
-    lib_conf.setImplicit(false)
-    pipeline_libs.push(lib_conf)
-  }
-}
-GlobalLibraries.get().setLibraries(pipeline_libs)
 
 // additional security settings
 log "Turning on Agent -> Master Control"

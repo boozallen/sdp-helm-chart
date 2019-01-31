@@ -35,7 +35,7 @@ spec:
       - image: "docker-registry.default.svc:5000/{{.Release.Namespace}}/jenkins-master:{{ .Values.imageTag | default .Chart.Version }}"
         name: jenkins-master
         {{- if .Values.global.openshift }}
-        env: 
+        env:
         - name: OPENSHIFT
           value: "true"
         {{- end }}
@@ -52,29 +52,12 @@ spec:
             cpu: {{ .Values.resources.master.requests.cpu | quote }}
             memory: {{ .Values.resources.master.requests.memory | quote }}
         volumeMounts:
-          - name: jenkins-job-dsl
-            mountPath: /var/jenkins_home/init.jobdsl.d
-          - name: jenkins-library-configuration
-            mountPath: /var/jenkins_home/init.groovy.d/configure_user_pipeline_libraries.groovy
-            subPath: configure_user_pipeline_libraries.groovy
           - name: jenkins-credential-configuration
             mountPath: /var/jenkins_home/init.groovy.d/configure_credentials.groovy
             subPath: configure_credentials.groovy
         securityContext:
           privileged: true
       volumes:
-        - name: jenkins-job-dsl
-          configMap:
-            name: jenkins-job-dsl
-            items:
-              - key: job-dsl
-                path: sdp-orgs.groovy
-        - name: jenkins-library-configuration
-          configMap:
-            name: jenkins-library-configuration
-            items:
-              - key: library-configuration
-                path: configure_user_pipeline_libraries.groovy
         - name: jenkins-credential-configuration
           secret:
             secretName: jenkins-credential-configuration
