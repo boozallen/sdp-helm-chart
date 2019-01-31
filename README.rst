@@ -252,5 +252,5 @@ Run the Installer Script
 
 
 
-.. _Solutions Delivery Platform: https://boozallen.github.io/sdp-pipeline-framework/html/index.html
+.. _Solutions Delivery Platform: https://boozallen.github.io/sdp-docs/
 .. _Kubernetes website: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
