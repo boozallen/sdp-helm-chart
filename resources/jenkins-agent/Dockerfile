@@ -32,4 +32,4 @@ RUN curl --create-dirs -sSLo /opt/jenkins-slave/bin/swarm-client-$JENKINS_SWARM_
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 ENTRYPOINT ["/bin/sh", "-c"]
-CMD ["/usr/bin/supervisord", "--configuration", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/bin/supervisord --configuration /etc/supervisor/conf.d/supervisord.conf"]
