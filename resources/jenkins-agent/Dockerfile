@@ -10,10 +10,10 @@ ENV JAVA_HOME /usr/lib/jvm/java
 
 RUN mkdir -p /opt/jenkins-slave/bin ${HOME}
 
-RUN apk add --no-cache curl openjdk8 git device-mapper openssl
+RUN apk add --no-cache curl openjdk8 git device-mapper openssl-dev build-base
 
 # install docker-compose
-RUN apk add --no-cache py-pip curl supervisor && \
+RUN apk add --no-cache py-pip curl supervisor libffi-dev python-dev && \
     pip install docker-compose
 
 # set PID max to 99999
