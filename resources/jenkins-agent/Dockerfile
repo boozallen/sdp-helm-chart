@@ -27,5 +27,5 @@ RUN chmod 777 /opt/jenkins-slave/bin/jenkins-slave && \
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-ENTRYPOINT []
-CMD /usr/bin/supervisord --configuration /etc/supervisor/conf.d/supervisord.conf
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["/usr/bin/supervisord --configuration /etc/supervisor/conf.d/supervisord.conf"]
