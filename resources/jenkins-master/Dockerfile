@@ -1,7 +1,7 @@
 # Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
 # This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
 
-FROM jenkins/jenkins:2.121.3
+FROM jenkins/jenkins:2.164.1
 
 ENV JAVA_OPTS "-Djenkins.install.runSetupWizard=false"
 ENV JTE_RELEASE "v0.1-alpha"
@@ -25,8 +25,9 @@ RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 COPY resources/scripts/configure.groovy /var/jenkins_home/init.groovy.d/configure.groovy
 RUN chmod 777 /var/jenkins_home/init.groovy.d/*
 
+# will add the plugin to the plugins.txt
 # copy in jte plugin #TODO: consider building this as part of a multistage Dockerfile
-ADD https://github.com/boozallen/jenkins-templating-engine/releases/download/$JTE_RELEASE/jte.jpi /usr/share/jenkins/ref
+# ADD https://github.com/boozallen/jenkins-templating-engine/releases/download/$JTE_RELEASE/jte.jpi /usr/share/jenkins/ref
 
 # copy in entry point scripts
 COPY resources/scripts/jenkins-preboot.sh /usr/local/bin/jenkins_preboot
