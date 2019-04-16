@@ -1,7 +1,7 @@
 # Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
 # This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
 
-FROM jenkins/jenkins:2.164.1
+FROM jenkins/jenkins:2.164.2
 
 ENV JAVA_OPTS "-Djenkins.install.runSetupWizard=false"
 ENV JTE_RELEASE "v0.1-alpha"
