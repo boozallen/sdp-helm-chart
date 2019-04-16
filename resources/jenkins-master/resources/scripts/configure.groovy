@@ -113,11 +113,12 @@ if (on_openshift){
   user.setFullName("Jenkins Administrator")
   dummy_pass = (1..20).collect([]){ ("a".."z").getAt(new Random().nextInt(26) % 26) }.join()
   user.addProperty(hudson.security.HudsonPrivateSecurityRealm.Details.fromPlainPassword(dummy_pass))
-  user.save()
 
-  // get dummy admin user api token and create openshift secret
+  // create dummy admin user api token and create openshift secret
   ApiTokenProperty t = user.getProperty(ApiTokenProperty.class)
-  def token = t.getApiTokenInsecure()
+  apitoken.ApiTokenStore.TokenUuidAndPlainValue tokenUuidAndPlainValue = t.tokenStore.generateNewToken('jenkins-access')
+  def token = tokenUuidAndPlainValue.plainValue
+  user.save()
 
   log "Creating OpenShift secret ${jenkins_secret} with admin service account API token"
 
