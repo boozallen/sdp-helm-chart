@@ -20,10 +20,10 @@ resources:
   master:
     limits:
       cpu: "1000m"
-      memory: "3000Mi"
+      memory: "4000Mi"
     requests:
       cpu: "1000m"
-      memory: "3000Mi"
+      memory: "4000Mi"
   agent:
     limits:
       cpu: "1000m"
