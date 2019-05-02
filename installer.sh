@@ -212,12 +212,14 @@ else
 fi
 
 # # create github secret
- echo -n "Enter GitHub User: "
- read GH_USER
+ if [ -z "$GH_USER" ] || [ -z "$GH_PAT" ]; then
+   echo -n "Enter GitHub User: "
+   read GH_USER
 
- echo -n "Enter GitHub Personal Access Token: "
- read -s GH_PAT
- echo
+   echo -n "Enter GitHub Personal Access Token: "
+   read -s GH_PAT
+   echo
+ fi
 
  if oc create secret generic github --from-literal=username="$GH_USER" --from-literal=password="$GH_PAT" > /dev/null; then
      pass "secret github created"
