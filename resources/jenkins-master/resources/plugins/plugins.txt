@@ -105,7 +105,7 @@ ssh-slaves:1.29.4
 structs:1.17
 subversion:2.12.1
 swarm:3.15
-templating-engine:1.0
+templating-engine:1.1.1
 timestamper:1.9
 token-macro:2.7
 variant:1.2
