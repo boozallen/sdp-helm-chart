@@ -3,8 +3,8 @@
 
 FROM docker:dind
 
-ENV JENKINS_SWARM_VERSION 3.9
-ENV JNLP_SLAVE_VERSION 3.9
+ENV JENKINS_SWARM_VERSION 3.17
+ENV JNLP_SLAVE_VERSION 3.31
 ENV HOME /root
 ENV JAVA_HOME /usr/lib/jvm/java
 
@@ -22,8 +22,8 @@ COPY jenkins-agent.sh /opt/jenkins-slave/bin/jenkins-slave
 RUN chmod 777 /opt/jenkins-slave/bin/jenkins-slave && \
     chmod +x /opt/jenkins-slave/bin/jenkins-slave && \
     # Download plugin and modify permissions
-    curl --create-dirs -sSLo /opt/jenkins-slave/bin/swarm-client-$JENKINS_SWARM_VERSION.jar http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/$JENKINS_SWARM_VERSION/swarm-client-$JENKINS_SWARM_VERSION.jar && \ 
-    curl --create-dirs -sSLo /opt/jenkins-slave/bin/slave.jar http://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/$JNLP_SLAVE_VERSION/remoting-$JNLP_SLAVE_VERSION.jar
+    curl --create-dirs -sSLo /opt/jenkins-slave/bin/swarm-client-$JENKINS_SWARM_VERSION.jar "http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/$JENKINS_SWARM_VERSION/swarm-client-$JENKINS_SWARM_VERSION.jar" && \ 
+    curl --create-dirs -sSLo /opt/jenkins-slave/bin/slave.jar "http://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/$JNLP_SLAVE_VERSION/remoting-$JNLP_SLAVE_VERSION.jar"
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
