@@ -1,16 +1,14 @@
 #! /bin/bash -e
 
-# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
-# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
-
 : "${JENKINS_WAR:="/usr/share/jenkins/jenkins.war"}"
 : "${JENKINS_HOME:="/var/jenkins_home"}"
 touch "${COPY_REFERENCE_FILE_LOG}" || { echo "Can not write to ${COPY_REFERENCE_FILE_LOG}. Wrong volume permissions?"; exit 1; }
 echo "--- Copying files at $(date)" >> "$COPY_REFERENCE_FILE_LOG"
 find /usr/share/jenkins/ref/ \( -type f -o -type l \) -exec bash -c '. /usr/local/bin/jenkins-support; for arg; do copy_reference_file "$arg"; done' _ {} +
 
-jenkins_preboot
-
+# move configure.groovy
+mkdir -p $JENKINS_HOME/init.groovy.d 
+cp $INIT_GROOVY_DIR/** $JENKINS_HOME/init.groovy.d/
 
 # Jenkins Performance Tuning ##############################
 CONTAINER_MEMORY_IN_BYTES=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
@@ -41,5 +39,4 @@ while IFS= read -r -d '' item; do
 done < <([[ $JAVA_OPTS ]] && xargs printf '%s\0' <<<"$JAVA_OPTS")
 
 ##########################################################
-echo java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" "$JAVA_PERFORMANCE_OPTS" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
-exec java -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" "$JAVA_PERFORMANCE_OPTS" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
+exec java -Djenkins.install.runSetupWizard=false -Duser.home="$JENKINS_HOME" "${java_opts_array[@]}" "$JAVA_PERFORMANCE_OPTS" -jar ${JENKINS_WAR} "${jenkins_opts_array[@]}" "$@"
