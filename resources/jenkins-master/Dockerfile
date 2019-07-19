@@ -1,8 +1,8 @@
 ## Note: Pulling container will require logging into Red Hat's registry using `docker login registry.redhat.io` .
-#FROM registry.redhat.io/ubi7-dev-preview/ubi 
+#FROM registry.redhat.io/ubi7-dev-preview/ubi
 #FROM docker-registry-default.apps.ocp-dev.microcaas.net/ubi/ubi7-hardened
 FROM registry.access.redhat.com/ubi7:7.6
-MAINTAINER Steven Terrana <terrana_steven@bah.com> 
+MAINTAINER Steven Terrana <terrana_steven@bah.com>
 
 ### Required Atomic/OpenShift Labels - https://github.com/projectatomic/ContainerApplicationGenericLabels
 LABEL name="Solutions Delivery Platform: Jenkins Master" \
@@ -53,8 +53,8 @@ RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
 # Use tini as subreaper in Docker container to adopt zombie processes
 ARG TINI_VERSION=v0.16.1
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini 
-RUN chmod +x /bin/tini  
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini
+RUN chmod +x /bin/tini
 
 # jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
@@ -63,9 +63,9 @@ ENV JENKINS_VERSION ${JENKINS_VERSION:-2.150.3}
 # Can be used to customize where jenkins.war get downloaded from
 ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
 
-ADD ${JENKINS_URL} /usr/share/jenkins/jenkins.war 
+ADD ${JENKINS_URL} /usr/share/jenkins/jenkins.war
 RUN chmod +x /usr/share/jenkins/jenkins.war && \
-    chown ${user} /usr/share/jenkins/jenkins.war 
+    chown ${user} /usr/share/jenkins/jenkins.war
 
 ENV JENKINS_UC https://updates.jenkins.io
 ENV JENKINS_UC_EXPERIMENTAL=https://updates.jenkins.io/experimental
@@ -82,8 +82,8 @@ ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
 COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
-RUN chmod +x /usr/local/bin/jenkins-support /usr/local/bin/jenkins.sh && \ 
-    chown ${user} /usr/local/bin/jenkins-support /usr/local/bin/jenkins.sh 
+RUN chmod +x /usr/local/bin/jenkins-support /usr/local/bin/jenkins.sh && \
+    chown ${user} /usr/local/bin/jenkins-support /usr/local/bin/jenkins.sh
 
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
@@ -95,15 +95,15 @@ COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 # Jenkins Configuration Customizations #
 ########################################
 
-# install plugins 
+# install plugins
 COPY resources/plugins/plugins.txt /usr/share/jenkins/ref/plugins.txt
-RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+RUN sh /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
 
-# copy in casc plugin 
+# copy in casc plugin
 ENV CASC_JENKINS_CONFIG /usr/share/jenkins/ref/casc_configs/jenkins.yaml
 COPY resources/jenkins.yaml /usr/share/jenkins/ref/casc_configs/jenkins.yaml
 
-# copy in groovy init scripts 
+# copy in groovy init scripts
 ENV INIT_GROOVY_DIR /usr/share/jenkins/ref/init_groovy
 COPY resources/scripts/init_groovy /usr/share/jenkins/ref/init_groovy
 
