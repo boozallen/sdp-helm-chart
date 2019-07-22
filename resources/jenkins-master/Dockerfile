@@ -95,6 +95,12 @@ COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 # Jenkins Configuration Customizations #
 ########################################
 
+# install oc client
+RUN mkdir -p /tmp/oc-client && cd /tmp/oc-client && \
+    wget -O oc-client.tar.gz https://github.com/openshift/origin/releases/download/v3.6.1/openshift-origin-client-tools-v3.6.1-008f2d5-linux-64bit.tar.gz && \
+    tar -xvf oc-client.tar.gz && \
+    mv */oc /usr/bin/oc
+
 # install plugins
 COPY resources/plugins/plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN sh /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
