@@ -96,10 +96,13 @@ COPY install-plugins.sh /usr/local/bin/install-plugins.sh
 ########################################
 
 # install oc client
-RUN mkdir -p /tmp/oc-client && cd /tmp/oc-client && \
-    wget -O oc-client.tar.gz https://github.com/openshift/origin/releases/download/v3.6.1/openshift-origin-client-tools-v3.6.1-008f2d5-linux-64bit.tar.gz && \
-    tar -xvf oc-client.tar.gz && \
-    mv */oc /usr/bin/oc
+#RUN mkdir -p /tmp/oc-client && cd /tmp/oc-client && \
+#    wget -O oc-client.tar.gz https://github.com/openshift/origin/releases/download/v3.6.1/openshift-origin-client-tools-v3.6.1-008f2d5-linux-64bit.tar.gz && \
+#    tar -xvf oc-client.tar.gz && \
+#    mv */oc /usr/bin/oc
+
+ADD https://github.com/openshift/origin/releases/download/v3.6.1/openshift-origin-client-tools-v3.6.1-008f2d5-linux-64bit.tar.gz /tmp/oc-client/oc-client.tar.gz
+RUN cd /tmp/oc-client && tar -xvf oc-client.tar.gz && mv /tmp/oc-client/*/oc /usr/bin/oc
 
 # install plugins
 COPY resources/plugins/plugins.txt /usr/share/jenkins/ref/plugins.txt
