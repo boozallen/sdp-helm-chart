@@ -19,6 +19,7 @@ import com.cloudbees.plugins.credentials.CredentialsProvider
 import hudson.plugins.sshslaves.*
 import org.openshift.jenkins.plugins.openshiftlogin.OpenShiftOAuth2SecurityRealm
 import com.openshift.jenkins.plugins.OpenShiftTokenCredentials
+import com.openshift.jenkins.plugins.ClusterConfig
 import groovy.io.FileType
 import javaposse.jobdsl.dsl.DslScriptLoader
 import javaposse.jobdsl.plugin.JenkinsJobManagement
@@ -33,7 +34,6 @@ import org.jenkinsci.plugins.workflow.libs.SCMSourceRetriever
 import org.jenkinsci.plugins.workflow.libs.SCMRetriever
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource
 import hudson.plugins.filesystem_scm.FSSCM
-import hudson.security.*
 
 // for security
 import jenkins.security.s2m.AdminWhitelistRule
@@ -52,9 +52,9 @@ import hudson.plugins.sonar.model.TriggersConfig
 import hudson.tools.InstallSourceProperty
 
 
-///////////////////
-// Define Constants
-///////////////////
+//////////////////////
+// Define Constants //
+//////////////////////
 
 Boolean on_openshift = System.getenv("OPENSHIFT") ? true : false
 
@@ -74,30 +74,28 @@ log = { message ->
   logger.info("${message}..")
 }
 
+log "found project to be: ${project_name}"
+
 def jenkins = Jenkins.getInstance()
 
+// master executors
+def num_master_executors = 0
+if (!on_openshift){ num_master_executors = 2 }
+log "Setting master executors to ${num_master_executors}"
+jenkins.setNumExecutors(num_master_executors)
+jenkins.save()
 
-// CSN GitHub
-log "Creating Github Enterprise Endpoint for CSN"
-List<Endpoint> endpointList = new ArrayList<Endpoint>()
-endpointList.add(new Endpoint("https://github.boozallencsn.com/api/v3", "CSN GitHub"))
-GlobalConfiguration.all().get(GitHubConfiguration.class).setEndpoints(endpointList)
+// slave agent port
+log "Setting agent port to 50000"
+jenkins.setSlaveAgentPort(50000)
+jenkins.save()
 
-// create jobs defined by JobDSL Scripts
-log "Creating jobs from JobDSL Scripts in ${System.getenv("JENKINS_HOME")}/init.jobdsl.d"
-def job_dsl = new File("${System.getenv("JENKINS_HOME")}/init.jobdsl.d")
-if (job_dsl.exists()){
-  def jobManagement = new JenkinsJobManagement(System.out, [:], new File("."))
-  job_dsl.eachFileRecurse (FileType.FILES) { script ->
-    log "  - ${script.name}"
-    try{
-      new DslScriptLoader(jobManagement).runScript(script.text)
-    }catch(any){
-      log "  ERROR: ${any}"
-    }
-  }
-}
+// durability set to performance optimized
+durability = jenkins.getDescriptor("org.jenkinsci.plugins.workflow.flow.GlobalDefaultFlowDurabilityLevel")
+durability.setDurabilityHint(FlowDurabilityHint.PERFORMANCE_OPTIMIZED)
+jenkins.save()
 
+// set jenkins url
 if (on_openshift){
   log "setting Jenkins URL"
   route = "oc get route jenkins | tail -n +2 | '{print \$2}'".execute()
@@ -206,12 +204,20 @@ log "Configuring optmized agent pod deregistration settings"
 jenkins.injector.getInstance(hudson.slaves.ChannelPinger.class).@pingIntervalSeconds = 1
 jenkins.injector.getInstance(hudson.slaves.ChannelPinger.class).@pingTimeoutSeconds = 10
 
+// additional security settings
+log "Turning on Agent -> Master Control"
+jenkins.injector.getInstance(AdminWhitelistRule.class).setMasterKillSwitch(false)
 
-// create initial admin user
-def hudsonRealm = new HudsonPrivateSecurityRealm(false)
-hudsonRealm.createAccount("admin","admin")
-jenkins.setSecurityRealm(hudsonRealm)
-def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
-strategy.setAllowAnonymousRead(true)
-Jenkins.instance.setAuthorizationStrategy(strategy)
+log "Disabling CLI Over Remoting"
+jenkins.CLI.get().setEnabled(false)
+
+log "Enabling CSRF Protection"
+jenkins.setCrumbIssuer(new DefaultCrumbIssuer(true))
 jenkins.save()
+
+log "Removing Deprecated Protocols"
+def protocols = jenkins.AgentProtocol.all()
+protocols.each{ p ->
+  if (!(p.name in [ "Ping", "JNLP4-connect" ]))
+    protocols.remove(p)
+}
