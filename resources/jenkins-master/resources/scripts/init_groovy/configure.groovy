@@ -18,6 +18,7 @@ import com.cloudbees.jenkins.plugins.sshcredentials.impl.*
 import com.cloudbees.plugins.credentials.CredentialsProvider
 import hudson.plugins.sshslaves.*
 import org.openshift.jenkins.plugins.openshiftlogin.OpenShiftOAuth2SecurityRealm
+import com.openshift.jenkins.plugins.OpenShiftTokenCredentials
 import groovy.io.FileType
 import javaposse.jobdsl.dsl.DslScriptLoader
 import javaposse.jobdsl.plugin.JenkinsJobManagement
