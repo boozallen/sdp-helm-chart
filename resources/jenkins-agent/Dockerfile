@@ -54,4 +54,4 @@ RUN curl --create-dirs -sSLo /opt/jenkins-agent/bin/swarm-client-$JENKINS_SWARM_
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 ENTRYPOINT []
-CMD supervisord --configuration /etc/supervisor/conf.d/supervisord.conf
+CMD printf 'supervisord --configuration /etc/supervisor/conf.d/supervisord.conf' | scl enable python27 -
