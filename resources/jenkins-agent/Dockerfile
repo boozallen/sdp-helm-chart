@@ -37,7 +37,8 @@ RUN yum install --disableplugin=subscription-manager -y \
     http://mirror.centos.org/centos/7/os/x86_64/Packages/libseccomp-2.3.1-3.el7.x86_64.rpm && \
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && \
     yum-config-manager --enable docker-ce-edge && \
-    yum install --disableplugin=subscription-manager -y docker-ce
+    yum install --disableplugin=subscription-manager -y docker-ce &&
+    yum install hostname
 
 RUN printf 'pip install --upgrade pip && pip install supervisor docker-compose'  | scl enable python27 -
 RUN mkdir -p /opt/jenkins-agent/bin ${HOME}
