@@ -55,6 +55,16 @@ import hudson.tools.InstallSourceProperty
 // Define Constants
 ///////////////////
 
+Boolean on_openshift = System.getenv("OPENSHIFT") ? true : false
+
+def project_name, jenkins_secret
+if (on_openshift){
+  whoami = "oc whoami".execute()
+  whoami.waitFor()
+  project_name = whoami.text.split(":").getAt(2)
+
+  jenkins_secret = "jenkins-access"
+}
 
 ////////////////
 
@@ -66,7 +76,7 @@ log = { message ->
 def jenkins = Jenkins.getInstance()
 
 
-// CSN GitHub 
+// CSN GitHub
 log "Creating Github Enterprise Endpoint for CSN"
 List<Endpoint> endpointList = new ArrayList<Endpoint>()
 endpointList.add(new Endpoint("https://github.boozallencsn.com/api/v3", "CSN GitHub"))
@@ -87,13 +97,116 @@ if (job_dsl.exists()){
   }
 }
 
+if (on_openshift){
+  log "setting Jenkins URL"
+  route = "oc get route jenkins | tail -n +2 | '{print \$2}'".execute()
+  route.waitFor()
+  url = route.text
+  jlc = new JenkinsLocationConfiguration().get()
+  jlc.setUrl(url)
+  jlc.save()
+
+
+  // create dummy admin user for connection agents
+  log "Creating admin service account: jenkins-admin"
+  jenkins_dummy_user = "jenkins-admin"
+  def user = hudson.model.User.get(jenkins_dummy_user)
+  user.setFullName("Jenkins Administrator")
+  dummy_pass = (1..20).collect([]){ ("a".."z").getAt(new Random().nextInt(26) % 26) }.join()
+  user.addProperty(hudson.security.HudsonPrivateSecurityRealm.Details.fromPlainPassword(dummy_pass))
+
+  // create dummy admin user api token and create openshift secret
+  ApiTokenProperty t = user.getProperty(ApiTokenProperty.class)
+  apitoken.ApiTokenStore.TokenUuidAndPlainValue tokenUuidAndPlainValue = t.tokenStore.generateNewToken('jenkins-access')
+  def token = tokenUuidAndPlainValue.plainValue
+  user.save()
+
+  log "Creating OpenShift secret ${jenkins_secret} with admin service account API token"
+
+  def proc1 = "oc delete secret ${jenkins_secret} || true".execute()
+  proc1.waitFor()
+  log proc1.text
+
+  def proc2 = "oc create secret generic ${jenkins_secret} --from-literal=username=${jenkins_dummy_user} --from-literal=token=${token}".execute()
+  proc2.waitFor()
+  log proc2.text
+
+  // create security matrix
+  log "Creating authorization strategy to Global Matrix Authorization"
+  GlobalMatrixAuthorizationStrategy newAuthMgr = new GlobalMatrixAuthorizationStrategy()
+
+  // set default authenticated user permissions
+  log "Setting default permissions for authenticated user"
+  [
+    Hudson.READ,
+    Item.READ,
+    Item.DISCOVER,
+    CredentialsProvider.VIEW
+  ].each{ permission ->
+    log "  - ${permission}"
+    newAuthMgr.add(permission, "authenticated");
+  }
+
+  // give dummy admin user ability to configure agents
+  log "Giving permissions to jenkins admin service account"
+  [
+    Jenkins.ADMINISTER,
+    hudson.model.Computer.BUILD,
+    hudson.model.Computer.CONFIGURE,
+    hudson.model.Computer.CONNECT,
+    hudson.model.Computer.CREATE,
+    hudson.model.Computer.DELETE,
+    hudson.model.Computer.DISCONNECT,
+    hudson.model.Computer.EXTENDED_READ
+  ].each{ permission ->
+    log "  - ${permission}"
+    newAuthMgr.add(permission, jenkins_dummy_user)
+  }
+
+  // apply matrix auth
+  log "Applying Global Matrix Authorization Strategy"
+  jenkins.setAuthorizationStrategy(newAuthMgr)
+  jenkins.save()
+
+  // add openshift oauth realm
+  log "Setting Security Realm to: OpenShiftOAuth2SecurityRealm"
+  def secRealm = new OpenShiftOAuth2SecurityRealm(null, null, null, null, null, null);
+  jenkins.setSecurityRealm(secRealm)
+  jenkins.save()
+
+  // create openshift clusters
+  log "Creating OpenShift Service Account Secret in Jenkins Credential Store"
+  def get_sa_token = "oc whoami -t".execute()
+  get_sa_token.waitFor()
+  sa_token = get_sa_token.text - '\n'
+  def cred_obj_1 = new OpenShiftTokenCredentials(
+    CredentialsScope.GLOBAL,
+    "openshift-service-account",
+    "OCP Jenkins Service Account API Token",
+    new Secret(sa_token)
+  )
+  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_1)
+
+  log "Creating Openshift Docker Registry Secret in Jenkins Credential Store"
+  def cred_obj_2 = (Credentials) new UsernamePasswordCredentialsImpl(
+    CredentialsScope.GLOBAL,
+    "openshift-docker-registry",
+    "openshift-docker-registry",
+    "service",
+    sa_token
+  )
+  SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), cred_obj_2)
+
+
+}
+
 // optimize agents disconnecting post termination
 log "Configuring optmized agent pod deregistration settings"
 jenkins.injector.getInstance(hudson.slaves.ChannelPinger.class).@pingIntervalSeconds = 1
 jenkins.injector.getInstance(hudson.slaves.ChannelPinger.class).@pingTimeoutSeconds = 10
 
 
-// create initial admin user 
+// create initial admin user
 def hudsonRealm = new HudsonPrivateSecurityRealm(false)
 hudsonRealm.createAccount("admin","admin")
 jenkins.setSecurityRealm(hudsonRealm)
