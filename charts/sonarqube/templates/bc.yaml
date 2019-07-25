@@ -11,6 +11,7 @@ spec:
   source:
     type: "Git"
     git:
+      ref: {{ $.Values.sourceRepositoryBranch | default "master" }}
       {{- if .Values.sourceRepositoryUrl }}
       uri: {{ .Values.sourceRepositoryUrl }}
       {{- else }}

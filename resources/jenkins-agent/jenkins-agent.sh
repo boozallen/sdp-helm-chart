@@ -7,6 +7,6 @@
 # oc whoami -t | docker login docker-registry.default.svc:5000 -u $REGISTRY_USERNAME --password-stdin
 
 # jenkins swarm slave
-JAR=`ls -1 /opt/jenkins-slave/bin/swarm-client-*.jar | tail -n 1`
+JAR=`ls -1 /opt/jenkins-agent/bin/swarm-client-*.jar | tail -n 1`
 PARAMS="-master $JENKINS_URL -tunnel $JENKINS_TUNNEL -username ${JENKINS_USERNAME} -password ${JENKINS_PASSWORD} -executors ${EXECUTORS} -name $(hostname)"
 exec java $JAVA_OPTS -jar $JAR -fsroot $HOME $PARAMS "$@"

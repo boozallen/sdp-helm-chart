@@ -1,0 +1,58 @@
+plugins:
+  sites:
+  - id: "default"
+    url: "https://updates.jenkins.io/update-center.json"
+jenkins:
+  agentProtocols:
+  - "JNLP4-connect"
+  - "Ping"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: true
+  disableRememberMe: false
+  mode: NORMAL
+  numExecutors: 0
+  primaryView:
+    all:
+      name: "all"
+  quietPeriod: 5
+  scmCheckoutRetryCount: 0
+  securityRealm:
+    local:
+      allowsSignup: false
+      enableCaptcha: false
+      users:
+      - id: "admin"
+  slaveAgentPort: 50000
+  views:
+  - all:
+      name: "all"
+security:
+  apiToken:
+    usageStatisticsEnabled: false
+  remotingCLI:
+    enabled: false
+unclassified:
+  location:
+    url: "http://jenkins.apps.usda-cloud-coe.net/"
+  sonarGlobalConfiguration:
+    installations:
+    - name: "SonarQube"
+      serverUrl: "http://sonarqube:9000"
+      triggers:
+        skipScmCause: false
+        skipUpstreamCause: false
+tool:
+  git:
+    installations:
+    - home: "git"
+      name: "Default"
+  jdk:
+    defaultProperties:
+    - installSource:
+        installers:
+        - jdkInstaller:
+            acceptLicense: false
