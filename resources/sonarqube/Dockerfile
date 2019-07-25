@@ -41,7 +41,7 @@ RUN curl -k -o sonarqube.zip -fSL https://binaries.sonarsource.com/Distribution/
     mv sonarqube-$SONAR_VERSION/** . && \
     rm sonarqube.zip* && \
     rm -rf $SONARQUBE_HOME/bin/* && \
-    chown -R sonarqube:sonarqube ${SONARQUBE_HOME}
+    chown -R sonarqube ${SONARQUBE_HOME}
 
 # init script
 ADD run.sh $SONARQUBE_HOME/bin/run.sh
@@ -51,6 +51,11 @@ RUN chmod +x $SONARQUBE_HOME/bin/run.sh && \
 # server configuration
 ADD sonar.properties /opt/sonarqube/conf/sonar.properties
 RUN chown sonarqube /opt/sonarqube/conf/sonar.properties
+
+# Openshift permissions
+RUN chgrp -R 0 $SONARQUBE_HOME && \
+    chmod -R g+rw $SONARQUBE_HOME && \
+    find $SONARQUBE_HOME -type d -exec chmod g+x {} +
 
 # persistent directory
 VOLUME "$SONARQUBE_HOME/data"
