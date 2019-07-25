@@ -1,26 +1,60 @@
-# Copyright © 2018 Booz Allen Hamilton. All Rights Reserved.
-# This software package is licensed under the Booz Allen Public License. The license can be found in the License file or at http://boozallen.github.io/licenses/bapl
+FROM registry.access.redhat.com/ubi7:7.6
+MAINTAINER Steven Terrana <terrana_steven@bah.com>
 
-FROM sonarqube:6.7
+### Required Atomic/OpenShift Labels - https://github.com/projectatomic/ContainerApplicationGenericLabels
+LABEL name="Solutions Delivery Platform: Jenkins Agent" \
+      maintainer="terrana_steven@bah.com" \
+      vendor="Booz Allen Hamilton" \
+      version="1.0" \
+      release="1.0" \
+      summary="A SonarQube Server used in the Solutions Delivery Platform" \
+      description="A SonarQube Server used in the Solutions Delivery Platform"
 
-ENV PLUGINS $SONARQUBE_HOME/extensions/plugins
+### add licenses to this directory
+COPY licenses /licenses
 
+### Add necessary Red Hat repos and packages here
+RUN INSTALL_PKGS="java-1.8.0-openjdk-devel unzip hostname shadow-utils" && \
+    yum --disableplugin=subscription-manager -y update-minimal --setopt=tsflags=nodocs \
+        --security --sec-severity=Important --sec-severity=Critical && \
+    yum --disableplugin=subscription-manager -y install --setopt=tsflags=nodocs ${INSTALL_PKGS}
+
+ENV SONAR_VERSION=6.7.6 \
+    SONARQUBE_HOME=/opt/sonarqube \
+    SONARQUBE_JDBC_USERNAME=sonar \
+    SONARQUBE_JDBC_PASSWORD=sonar \
+    SONARQUBE_JDBC_URL= \
+    PLUGINS=$SONARQUBE_HOME/extensions/plugins
+
+# http port
+EXPOSE 9000
+
+# setup sonarqube user
+RUN groupadd -r sonarqube && useradd -r -g sonarqube sonarqube && \
+    mkdir -p $SONARQUBE_HOME
+
+WORKDIR $SONARQUBE_HOME
+
+# download sonarqube
+RUN curl -k -o sonarqube.zip -fSL https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-$SONAR_VERSION.zip && \
+    unzip sonarqube.zip && \
+    mv sonarqube-$SONAR_VERSION/** . && \
+    rm sonarqube.zip* && \
+    rm -rf $SONARQUBE_HOME/bin/* && \
+    chown -R sonarqube:sonarqube ${SONARQUBE_HOME}
+
+# init script
 ADD run.sh $SONARQUBE_HOME/bin/run.sh
+RUN chmod +x $SONARQUBE_HOME/bin/run.sh && \
+    chown sonarqube $SONARQUBE_HOME/bin/run.sh
+
+# server configuration
 ADD sonar.properties /opt/sonarqube/conf/sonar.properties
+RUN chown sonarqube /opt/sonarqube/conf/sonar.properties
 
-USER root
-RUN curl -L -O https://binaries.sonarsource.com/Distribution/sonar-java-plugin/sonar-java-plugin-5.1.0.13090.jar && \
-    curl -L -O https://github.com/SonarQubeCommunity/sonar-pmd/releases/download/2.6/sonar-pmd-plugin-2.6.jar && \
-    curl -L -O https://github.com/checkstyle/sonar-checkstyle/releases/download/4.8/checkstyle-sonar-plugin-4.8.jar && \
-    curl -L -O https://github.com/spotbugs/sonar-findbugs/releases/download/3.6.0/sonar-findbugs-plugin-3.6.0.jar && \
-    curl -L -O https://binaries.sonarsource.com/Distribution/sonar-javascript-plugin/sonar-javascript-plugin-4.0.0.5862.jar && \
-    mv $SONARQUBE_HOME/*.jar $PLUGINS && \
-    chmod +x $SONARQUBE_HOME/bin/run.sh && \
-    chown -R sonarqube $SONARQUBE_HOME && \
-    chgrp -R 0 $SONARQUBE_HOME && \
-    chmod -R g+rw $SONARQUBE_HOME && \
-    find $SONARQUBE_HOME -type d -exec chmod g+x {} +
-
+# persistent directory
+VOLUME "$SONARQUBE_HOME/data"
 
 USER sonarqube
-ENTRYPOINT $SONARQUBE_HOME/bin/run.sh
+
+ENTRYPOINT ["./bin/run.sh"]
