@@ -1,3 +1,9 @@
+---------------------------------------
+**This repository is deprecated.**
+---------------------------------------
+
+Please see the `SDP-IAC Repository <https://github.com/boozallen/sdp-iac>`_.
+
 --------------------------
 SDP Deployment Helm Charts
 --------------------------
